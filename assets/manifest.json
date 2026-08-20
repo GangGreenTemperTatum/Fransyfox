@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Fransceiver",
+  "description": "postMessage transceiver: intercept, track, and analyze cross-frame postMessage listeners and messages",
+  "version": "0.1.0",
+  "author": "Fransceiver contributors",
+  "homepage_url": "https://github.com/GangGreenTemperTatum/Fransceiver",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Fransceiver - PostMessage Tracker"
+  },
+  "devtools_page": "devtools.html",
+  "side_panel": {
+    "default_path": "panel.html"
+  },
+  "permissions": ["tabs", "storage", "scripting", "sidePanel", "webNavigation"],
+  "host_permissions": ["*://*/*"]
+}

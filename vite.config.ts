@@ -1,0 +1,13 @@
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  build: {
+    target: 'es2022',
+    minify: false,
+    sourcemap: true
+  },
+  test: {
+    environment: 'node',
+    include: ['src/**/*.test.ts']
+  }
+});

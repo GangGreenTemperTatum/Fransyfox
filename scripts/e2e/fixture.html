@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Fransceiver E2E Fixture</title>
+</head>
+<body>
+  <h1>Fransceiver E2E Fixture</h1>
+  <p>This page registers postMessage listeners and transmits messages so the
+     extension pipeline can be verified end-to-end.</p>
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var marker = params.get('marker') || 'frx-e2e-default';
+      var clickCount = 0;
+
+      window.__frxE2E = {
+        marker: marker,
+        listenersRegistered: 0,
+        messagesPosted: 0
+      };
+
+      function frxProbeListener(event) {
+        void event;
+        clickCount += 1;
+      }
+      frxProbeListener.marker = marker;
+      window.addEventListener('message', frxProbeListener);
+      window.__frxE2E.listenersRegistered = 1;
+      window.__frxE2E.clickCount = function () { return clickCount; };
+
+      var posted = 0;
+      var timer = setInterval(function () {
+        if (posted >= 6) {
+          clearInterval(timer);
+          return;
+        }
+        window.postMessage({ frxE2E: marker, seq: posted, ts: Date.now() }, '*');
+        posted += 1;
+        window.__frxE2E.messagesPosted = posted;
+      }, 100);
+
+      window.__frxE2E.registerDedupeProbe = function () {
+        function frxDedupeProbe(event) { void event; }
+        window.addEventListener('message', frxDedupeProbe);
+        window.addEventListener('message', frxDedupeProbe);
+        window.__frxE2E.dedupeProbes = 2;
+      };
+
+      window.__frxE2E.postSecret = function (secret) {
+        window.postMessage({ frxSecret: secret, ts: Date.now() }, '*');
+      };
+    })();
+  </script>
+</body>
+</html>

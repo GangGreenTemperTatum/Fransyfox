@@ -1,0 +1,31 @@
+{
+  "name": "fransceiver",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "postMessage transceiver - intercept, track, and analyze cross-frame postMessage listeners and messages",
+  "license": "MIT",
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "dev": "npm run dev:panel",
+    "dev:panel": "chokidar \"src/panel-*.ts\" \"src/shared/**/*\" \"src/types/**/*\" \"assets/panel.html\" \"assets/panel.css\" \"assets/panel-modals.css\" -c \"npm run build\" --initial",
+    "dev:all": "chokidar \"src/**/*\" \"assets/**/*.{html,css,png,json}\" -c \"npm run build\" --initial",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint \"src/**/*.ts\"",
+    "test": "vitest run",
+    "e2e:firefox": "python3 scripts/e2e/firefox_e2e.py",
+    "e2e:firefox:lint": "web-ext lint --source-dir dist/firefox"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.1.16",
+    "@types/node": "^22.13.5",
+    "@typescript-eslint/eslint-plugin": "^8.24.0",
+    "@typescript-eslint/parser": "^8.24.0",
+    "chokidar-cli": "^3.0.0",
+    "eslint": "^9.20.1",
+    "typescript-eslint": "^8.24.0",
+    "typescript": "^5.7.3",
+    "vite": "^6.1.0",
+    "vitest": "^3.0.5"
+  }
+}

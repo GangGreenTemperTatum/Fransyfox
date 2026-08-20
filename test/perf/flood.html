@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<!--
+  FancyTracker performance test page (not shipped with the extension).
+
+  Serve the directory and open flood.html, e.g.:
+    npx http-server test/perf -p 8787
+    open http://localhost:8787/flood.html
+
+  The page nests itself two levels deep via ?depth=, registers ~50 unique
+  message listeners spread across the frames, and floods window.postMessage
+  at ~200 msg/s cycling 1 KB / 20 KB / 100 KB payloads (including a JSON
+  "source" envelope variant to exercise hasIgnoredEnvelopeInDataText).
+
+  Use with Chrome Task Manager (Shift+Esc) and Performance traces of the
+  tab renderer, the extension service worker, and the side panel.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>FancyTracker flood test</title>
+<style>
+  body { font-family: ui-monospace, monospace; margin: 12px; }
+  .stats { white-space: pre; background: #f3f4f6; padding: 8px; border-radius: 4px; }
+  iframe { width: 95%; height: 220px; border: 1px solid #d1d5db; margin-top: 8px; }
+  button { margin-right: 8px; }
+</style>
+</head>
+<body>
+<h3 id="title">flood.html</h3>
+<div>
+  <button id="toggle">Pause flood</button>
+  <label><input type="checkbox" id="big" checked> include 100 KB payloads</label>
+</div>
+<div class="stats" id="stats">starting…</div>
+<script>
+(function () {
+  'use strict';
+  const params = new URLSearchParams(location.search);
+  const depth = parseInt(params.get('depth') || '0', 10);
+  const MAX_DEPTH = 2;
+  document.getElementById('title').textContent = 'flood.html (depth ' + depth + ')';
+
+  // ---- Unique listeners (dedupe must not collapse them) ----------------
+  // ~17 per frame x 3 frames ≈ 50 total. A few match findings rules on
+  // purpose (no origin check + data use, eval-like sinks).
+  const LISTENERS_PER_FRAME = 17;
+  for (let i = 0; i < LISTENERS_PER_FRAME; i++) {
+    const id = 'd' + depth + '_l' + i;
+    let fn;
+    if (i % 5 === 0) {
+      // findings bait: uses event.data without origin check
+      fn = new Function('event', 'var sink_' + id + ' = event.data; if (sink_' + id + ' === "__never__") console.log(sink_' + id + ');');
+    } else if (i % 5 === 1) {
+      // origin checked with sloppy regex (findings bait)
+      fn = new Function('event', 'if (/example\\.com$/.test(event.origin)) { var x_' + id + ' = event.data; }');
+    } else {
+      fn = new Function('event', 'var noop_' + id + ' = event && event.data ? 1 : 0;');
+    }
+    window.addEventListener('message', fn);
+  }
+  // One jQuery-style wrapped registration and one onmessage assignment.
+  window.onmessage = function floodOnMessage(event) { void event; };
+
+  // ---- Nested frames ----------------------------------------------------
+  if (depth < MAX_DEPTH) {
+    const frame = document.createElement('iframe');
+    frame.src = location.pathname + '?depth=' + (depth + 1);
+    document.body.appendChild(frame);
+  }
+
+  // ---- Payloads ----------------------------------------------------------
+  function blob(size, seed) {
+    let s = '';
+    while (s.length < size) s += seed + '-' + s.length + '|';
+    return s.slice(0, size);
+  }
+  const payloads = [
+    { name: '1KB-obj', make: (n) => ({ kind: 'small', n, items: [1, 2, 3], text: blob(900, 'sm') }) },
+    { name: '20KB-obj', make: (n) => ({ kind: 'medium', n, nested: { deep: { deeper: blob(19000, 'md') } } }) },
+    { name: '1KB-envelope', make: (n) => ({ source: 'flood-test-page', n, payload: blob(800, 'env') }) },
+    { name: '20KB-string', make: (n) => 'str-' + n + ':' + blob(20000, 'st') },
+    { name: '100KB-obj', make: (n) => ({ kind: 'large', n, body: blob(100000, 'lg') }), big: true }
+  ];
+
+  // ---- Flood loop: ~200 msg/s -------------------------------------------
+  let running = true;
+  let sent = 0;
+  let started = performance.now();
+  const bigBox = document.getElementById('big');
+  setInterval(function () {
+    if (!running) return;
+    const pool = bigBox.checked ? payloads : payloads.filter(p => !p.big);
+    const p = pool[sent % pool.length];
+    window.postMessage(p.make(sent), '*');
+    // also exercise cross-frame traffic
+    if (depth < MAX_DEPTH && sent % 4 === 0) {
+      const f = document.querySelector('iframe');
+      if (f && f.contentWindow) f.contentWindow.postMessage({ crossFrame: true, n: sent }, '*');
+    }
+    if (depth > 0 && sent % 4 === 2) {
+      parent.postMessage({ toParent: true, n: sent }, '*');
+    }
+    sent++;
+  }, 5);
+
+  document.getElementById('toggle').addEventListener('click', function () {
+    running = !running;
+    this.textContent = running ? 'Pause flood' : 'Resume flood';
+  });
+
+  setInterval(function () {
+    const secs = (performance.now() - started) / 1000;
+    document.getElementById('stats').textContent =
+      'depth: ' + depth +
+      '\nsent: ' + sent +
+      '\nrate: ' + (sent / secs).toFixed(1) + ' msg/s' +
+      '\nlisteners: ' + (LISTENERS_PER_FRAME + 1) + ' in this frame';
+  }, 1000);
+
+  // Late listener registrations (exercise registration path under load).
+  setInterval(function () {
+    const stamp = 'late_' + depth + '_' + Date.now();
+    const fn = new Function('event', 'var late_' + stamp + ' = event ? 1 : 0;');
+    window.addEventListener('message', fn);
+  }, 5000);
+})();
+</script>
+</body>
+</html>

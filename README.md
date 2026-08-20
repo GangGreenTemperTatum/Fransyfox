@@ -1,0 +1,139 @@
+# Fransceiver
+
+Fransceiver (pronounced *frans-SEE-ver*) is a browser extension that watches
+`postMessage` traffic on every web page you visit. Like a radio transceiver,
+it picks up the signals others send — and lets you transmit your own.
+
+It detects `postMessage` listeners registered by pages across all frames and
+origins, shows their source code and stack traces, captures cross-frame
+messages, and lets you filter, splice, and replay them.
+
+Available for **Chrome/Chromium** (MV3 side panel) and **Firefox 128+**
+(extension sidebar).
+
+> **Named in honor of [Frans Rosén](https://twitter.com/fransrosen) and his
+> original [postMessage-tracker](https://github.com/fransr/postMessage-tracker).**
+> This extension exists because of him — [full credits below](#credits--hall-of-fame).
+
+## Why the name
+
+Fransceiver is named after **Frans Rosén** ([@fransrosen](https://twitter.com/fransrosen)) — the legendary security researcher who built the original
+[postMessage-tracker](https://github.com/fransr/postMessage-tracker).
+
+It's *Frans* + *transceiver*: a radio operator's device that listens to
+signals on the wire and keys up to transmit its own. That is exactly what
+this extension does — receives every `postMessage` a page sends, and
+transmits the ones you compose. Every time this tool helps you find a bug
+in somebody's cross-frame messaging, it's standing on Frans's shoulders.
+
+## Credits — hall of fame
+
+Fransceiver is a modern, cross-browser spiritual successor. Everything here
+traces back to the work of three people. Go star and thank them:
+
+| Project | Author | Role |
+|---------|--------|------|
+| [postMessage-tracker](https://github.com/fransr/postMessage-tracker) | [Frans Rosén](https://twitter.com/fransrosen) | **The original.** The one that started everything. Before it, mapping a site's `postMessage` listeners meant reading minified bundles with a crystal ball. Frans handed the research community a tool that made cross-frame attacks *visible*, and it changed how a generation of appsec people approach client-side bugs. |
+| [FancyTracker](https://github.com/Zeetaz/FancyTracker) | Erik Zettergren | Extended fork of the original with the rich side-panel UI that Fransceiver's interface descends from. |
+| [FransyTracker](https://gitlab.com/joaxcar/fransytracker) | Johan Carlsson | Manifest V3 modernization, findings engine, message timeline, and the battle-tested service-worker persistence model. Fransceiver's codebase is derived from this — it was FransyTracker that ran in a side panel for years while browser politics tore the original down and rebuilt it. |
+| Fransceiver | You, reading this | This repo: renamed, rebuilt for Firefox 128+ *and* Chrome, re-verified end-to-end so the lineage lives on. |
+
+All upstream work is MIT-licensed — see [LICENSE](LICENSE).
+
+> **Frans, if you ever stumble on this: thank you. The `postMessage` on
+> every site still hums for you. 73.**
+
+## Features
+
+- **Listener detection** — monitors every `postMessage` listener registered
+  via `addEventListener` / `onmessage` across all frames, showing source code,
+  stack traces, and frame hops. Unwraps wrappers (jQuery, sentry, raven,
+  newrelic, rollbar, bugsnag, zone.js, vue, react, and more).
+- **Message interception** — captures window and `MessagePort` traffic with
+  origin, source/target frame, payload, and timing. Flood-protection batching
+  keeps heavy pages responsive.
+- **Deduplication** — identical listeners from the same source are collapsed.
+- **Findings engine** — rule-based analysis flags risky listeners
+  (innerHTML, eval, location.href, origins, etc.) ranked by severity.
+- **Match & Replace** — live regex splicing of `postMessage` payloads, both
+  directions. Intercept and rewrite messages as they fly.
+- **Composer** — craft and send your own `postMessage` payloads into any frame.
+- **Map / Timeline** — frame-tree graph and message timeline views.
+- **Filtering & blocking** — block noisy or trusted listeners by code, URL, or
+  regex (safe-subset regex engine; ReDoS-bait is rejected).
+- **Syntax highlighting & prettify** — highlight.js + custom color rules,
+  code beautify, adjustable fonts/lines/thresholds.
+- **Import/export** — blocked lists, listeners, messages, and findings as JSON.
+- **External logging** — forward detected listeners to your own endpoint.
+
+## Build
+
+```bash
+npm install
+npm run build      # emits dist/chrome/ and dist/firefox/
+```
+
+Quality gates: `npm run typecheck`, `npm run lint`, `npm run test`.
+
+## Install
+
+### Chrome / Chromium
+
+1. `chrome://extensions` → enable **Developer mode**
+2. **Load unpacked** → select `dist/chrome/`
+3. Click the toolbar icon to open the side panel for the active tab.
+
+### Firefox (128+)
+
+Temporary load (development):
+
+1. Open `about:debugging#/runtime/this-firefox`
+2. **Load Temporary Add-on…** → select `dist/firefox/manifest.json`
+3. Click the toolbar button to toggle the Fransceiver sidebar. The panel
+   follows the active tab.
+
+Permanent install requires an AMO-signed package (add-on ID and homepage
+already point at this repo: `fransceiver@GangGreenTemperTatum.github.io`).
+
+### Firefox vs Chrome
+
+| Feature | Chrome | Firefox |
+|---------|--------|---------|
+| Panel UI | Side panel (per-tab) | Extension sidebar (follows active tab) |
+| MAIN-world hooks | ✓ | ✓ (128+) |
+| "Go to source" in DevTools | ✓ | Not supported — reports an error |
+
+## END-TO-END TEST (Firefox)
+
+`npm run e2e:firefox` launches a real Firefox, loads the add-on, opens a test
+page, and verifies the full pipeline through the extension's real port
+protocol, covering:
+
+1. MAIN-world content script injection and hooks
+2. Listener capture (source + stack) through bridge → service worker
+3. postMessage capture with tab attribution
+4. Frame tree building
+5. Panel UI loading in an extension context
+6. Deduplication (double registration collapses to one)
+7. Match & Replace live payload splicing (rule → broadcast → MAIN world)
+8. State persistence across an extension reload (`runtime.reload`)
+
+Requirements: Firefox Developer Edition or Nightly (release builds enforce
+add-on signing — set `FIREFOX_BIN`), [geckodriver](https://github.com/mozilla/geckodriver)
+on `PATH`, Python 3 with `selenium`. Logs and screenshots land in
+`scripts/e2e/artifacts/`.
+
+Unit tests (`npm run test`) cover the environment-agnostic logic: message
+contracts, state normalization, blacklist matching, capture serialization,
+event store, regex safety, and the browser-surface adapter
+(`src/shared/browser-env.ts`).
+
+## Docs
+
+- [CLAUDE.md](CLAUDE.md) — agent guide / architecture cheat sheet
+- [ARCHITECTURE.md](ARCHITECTURE.md) — architecture + regression matrix
+- [SMOKE_CHECKLIST.md](SMOKE_CHECKLIST.md) — manual smoke checklist
+
+## License
+
+MIT — see [LICENSE](LICENSE). Long live the original credit lines.

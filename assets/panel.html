@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Fransceiver</title>
+	<!-- CSS files -->
+	<link rel="stylesheet" href="panel.css">
+	<link rel="stylesheet" href="panel-modals.css">
+	<!-- Load local highlight.js CSS -->
+	<link rel="stylesheet" href="lib/github.css">
+	<!-- Load local highlight.js JavaScript -->
+	<script src="lib/highlight.min.js"></script>
+	<!-- Shared modules (order matters - dependencies first) -->
+	<script type="text/javascript" src="shared/constants.js"></script>
+	<script type="text/javascript" src="shared/url-utils.js"></script>
+	<script type="text/javascript" src="shared/messages.js"></script>
+	<script type="text/javascript" src="shared/logger.js"></script>
+	<script type="text/javascript" src="shared/findings.js"></script>
+	<!-- Panel modules (order matters - dependencies first) -->
+	<script type="text/javascript" src="panel-storage.js"></script>
+	<script type="text/javascript" src="panel-ui-messages.js"></script>
+	<script type="text/javascript" src="panel-ui-findings.js"></script>
+	<script type="text/javascript" src="panel-ui-map.js"></script>
+	<script type="text/javascript" src="panel-ui-timeline.js"></script>
+	<script type="text/javascript" src="panel-ui.js"></script>
+	<script type="text/javascript" src="panel-modals.js"></script>
+	<script type="text/javascript" src="panel-main.js"></script>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<div class="header-left">
+				<div class="logo">Fransceiver</div>
+				<div class="status-dot" id="status-badge" title="Active"></div>
+				<div class="preserve-dot" id="preserve-badge" title="Preserve log on navigation (off)"></div>
+				<button class="settings-btn" id="settings-btn" title="Settings">&#9881;</button>
+			</div>
+			<div class="url-display" id="h">Loading...</div>
+		</div>
+		
+		<div class="stats-bar">
+			<div class="listener-count" id="listener-count"></div>
+			<div class="stats-left">
+				<div class="tabs">
+					<button class="tab-btn active" id="listeners-tab">Listeners</button>
+					<button class="tab-btn" id="messages-tab">Messages</button>
+					<button class="tab-btn" id="findings-tab">Findings</button>
+					<button class="tab-btn" id="map-tab">Map</button>
+					<button class="tab-btn" id="timeline-tab">Timeline</button>
+					<button class="tab-btn" id="utils-tab">Utils</button>
+				</div>
+			</div>
+		</div>
+		
+		<div class="toolbar-row">
+			<div class="listeners-filters" id="listeners-toolbar">
+				<div class="listeners-filters-row">
+					<select class="messages-select messages-direction" id="listeners-direction">
+						<option value="desc">Newest</option>
+						<option value="asc">Oldest</option>
+					</select>
+					<select class="messages-select" id="listeners-url-filter">
+						<option value="any">URL: Any</option>
+					</select>
+					<input class="messages-search" id="listeners-search" type="text" placeholder="Search listener code">
+				</div>
+				<div class="listeners-actions-row">
+					<button class="messages-icon-btn" id="regex-btn" title="Regex blocking filters">.*</button>
+					<button class="messages-icon-btn" id="show-blocked-btn" title="Show blocked listeners">&#8864;</button>
+					<button class="messages-icon-btn" id="highlight-btn" title="Custom highlighting">&#9998;</button>
+					<button class="messages-icon-btn" id="listeners-beautify" title="Beautify listener code">{ }</button>
+					<button class="messages-icon-btn" id="listeners-export" title="Export listeners">&#8615;</button>
+					<button class="messages-icon-btn messages-icon-btn-danger" id="listeners-clear" title="Clear listeners">&#10005;</button>
+				</div>
+			</div>
+				<div class="messages-filters" id="messages-filters">
+				<div class="messages-filters-row">
+					<select class="messages-select messages-direction" id="messages-direction">
+						<option value="desc">Newest</option>
+						<option value="asc">Oldest</option>
+					</select>
+					<select class="messages-select" id="messages-target">
+						<option value="any">Target: Any</option>
+					</select>
+					<input class="messages-search" id="messages-search" type="text" placeholder="Search content, frame, or URL">
+				</div>
+				<div class="messages-actions-row">
+					<button class="messages-icon-btn" id="messages-beautify" title="Beautify JSON">{ }</button>
+					<button class="messages-icon-btn" id="messages-expand-all" title="Expand All">&#8597;</button>
+					<button class="messages-icon-btn" id="messages-export" title="Export">&#8615;</button>
+					<button class="messages-icon-btn messages-icon-btn-danger" id="messages-clear" title="Clear Messages">&#10005;</button>
+				</div>
+			</div>
+			<div class="findings-filters" id="findings-filters">
+				<select class="findings-select" id="findings-severity">
+					<option value="any">Severity: Any</option>
+					<option value="high">Severity: High</option>
+					<option value="medium">Severity: Medium</option>
+					<option value="low">Severity: Low</option>
+				</select>
+				<input class="findings-search" id="findings-search" type="text" placeholder="Search findings, rules, or listener context">
+				<button class="findings-btn-action findings-btn-secondary" id="findings-clear-filter">Show All</button>
+				<button class="findings-btn-action" id="findings-export">Export</button>
+				<button class="findings-btn-action findings-btn-clear" id="findings-clear">Clear</button>
+			</div>
+		</div>
+
+		<div class="utils-panel" id="utils-panel">
+			<div class="utils-section collapsed" id="utils-section-match">
+				<div class="utils-section-header" id="utils-section-match-header">
+					<span class="utils-section-toggle">&#9660;</span>
+					<span class="utils-section-title">Match and Replace</span>
+					<span class="utils-section-actions">
+						<button class="messages-btn-action" id="match-save">Save Rules</button>
+						<button class="messages-btn-action match-reload" id="match-reload">Reload Tab</button>
+					</span>
+				</div>
+				<div class="utils-section-body">
+					<textarea class="match-textarea" id="match-textarea" placeholder="One rule per line:
+
+pattern => replacement
+
+Examples:
+token=([^&]+) => token=REDACTED
+&quot;origin&quot;:&quot;[^&quot;]+&quot; => &quot;origin&quot;:&quot;https://example.com&quot;"></textarea>
+					<div class="match-help">
+						Rules are applied in order. Patterns are JavaScript regex (no delimiters needed); nested repetition, repeated alternation, and backreferences are rejected.
+					</div>
+					<div class="match-preview">
+						<textarea class="match-textarea match-sample" id="match-sample" placeholder="Sample message payload to test (string or JSON)"></textarea>
+						<div class="match-preview-actions">
+							<button class="messages-btn-action" id="match-preview">Test Rule</button>
+						</div>
+						<pre class="match-result" id="match-result"></pre>
+					</div>
+				</div>
+			</div>
+			<div class="utils-section collapsed" id="utils-section-grep">
+				<div class="utils-section-header" id="utils-section-grep-header">
+					<span class="utils-section-toggle">&#9660;</span>
+					<span class="utils-section-title">Grep Extract</span>
+					<span class="utils-section-actions">
+						<button class="messages-btn-action" id="grep-copy-btn">Copy</button>
+						<button class="messages-btn-action" id="grep-download-btn">Download</button>
+					</span>
+				</div>
+				<div class="utils-section-body">
+					<div class="grep-input-row">
+						<input class="grep-regex-input" id="grep-regex-input" type="text" placeholder="Regex pattern (e.g. https?://[^\s&quot;'<>)]+)">
+						<button class="messages-btn-action" id="grep-extract-btn">Extract</button>
+					</div>
+					<div class="match-help">Unsafe patterns are rejected. At most the first 64K characters of each captured message are inspected.</div>
+					<div class="grep-options-row">
+						<label class="grep-checkbox-label">
+							<input type="checkbox" id="grep-sort-checkbox"> Sort
+						</label>
+						<label class="grep-checkbox-label">
+							<input type="checkbox" id="grep-unique-checkbox"> Unique
+						</label>
+					</div>
+					<textarea class="grep-results-textarea" id="grep-results" readonly placeholder="Extracted results will appear here..."></textarea>
+				</div>
+			</div>
+			<div class="utils-section collapsed" id="utils-section-compose">
+				<div class="utils-section-header" id="utils-section-compose-header">
+					<span class="utils-section-toggle">&#9660;</span>
+					<span class="utils-section-title">Compose / Send</span>
+					<span class="utils-section-actions">
+						<button class="messages-btn-action" id="compose-send-btn">Send</button>
+					</span>
+				</div>
+				<div class="utils-section-body">
+					<div class="compose-row">
+						<label class="compose-label">Target frame</label>
+						<select class="messages-select" id="compose-frame"></select>
+					</div>
+					<div class="compose-row">
+						<label class="compose-label">Deliver to</label>
+						<select class="messages-select" id="compose-target">
+							<option value="self">This frame (self)</option>
+							<option value="top">top</option>
+							<option value="parent">parent</option>
+							<option value="opener">opener</option>
+						</select>
+						<label class="compose-label">targetOrigin</label>
+						<input class="messages-search" id="compose-origin" type="text" placeholder="* (any)">
+					</div>
+					<div class="compose-row">
+						<label class="compose-radio-label"><input type="radio" name="compose-type" id="compose-type-json" value="json" checked> JSON</label>
+						<label class="compose-radio-label"><input type="radio" name="compose-type" value="string"> String</label>
+					</div>
+					<textarea class="match-textarea" id="compose-payload" placeholder='Message payload. JSON example:
+
+{ "type": "ping", "value": 1 }'></textarea>
+					<div class="match-help">
+						The message is dispatched from the selected frame using the original postMessage. The browser fixes <code>event.origin</code> to that frame's origin &mdash; arbitrary origins cannot be spoofed, but any reachable frame can be targeted.
+					</div>
+					<pre class="match-result" id="compose-result"></pre>
+					<div class="compose-history-header">
+						<span class="compose-history-title">History</span>
+						<button class="messages-btn-action" id="compose-history-clear">Clear</button>
+					</div>
+					<div class="compose-history" id="compose-history"></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="map-panel" id="map-panel">
+			<div class="map-canvas" id="map-canvas"></div>
+		</div>
+
+		<div class="map-panel" id="timeline-panel">
+			<div class="map-canvas" id="timeline-canvas"></div>
+		</div>
+
+		<div class="content">
+			<div class="listeners-container" id="x">
+				<!-- No initial loading state - data will load immediately from background script cache -->
+			</div>
+		</div>
+	</div>
+
+	<!-- Highlight Editor Modal -->
+	<div class="highlight-modal" id="highlight-modal">
+		<div class="highlight-editor">
+			<div class="highlight-header">
+				Custom Syntax Highlighting
+			</div>
+			<div class="highlight-content">
+				<textarea class="highlight-textarea" id="highlight-textarea" placeholder="Enter your highlighting rules (EXAMPLE):
+
+[red]
+innerHTML, location.href, eval
+
+[green]
+origin, trusted
+
+[blue]
+postMessage, addEventListener
+
+[yellow]
+function, var, let, const
+
+[purple]
+window, document
+
+[pink]
+event, data"
+				></textarea>
+				<div class="highlight-help">
+					Define highlighting rules by color. Each color section should start with [colorname] followed by comma-separated terms to highlight. Supported colors: red, green, blue, yellow, purple, pink.
+				</div>
+			</div>
+			<div class="highlight-actions">
+				<button class="highlight-btn-action highlight-btn-cancel" id="highlight-cancel">Cancel</button>
+				<button class="highlight-btn-action highlight-btn-save" id="highlight-save">Save & Apply</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Regex Editor Modal -->
+	<div class="regex-modal" id="regex-modal">
+		<div class="regex-editor">
+			<div class="regex-header">
+				Regex Blocking Filters
+			</div>
+			<div class="regex-content">
+				<textarea class="regex-textarea" id="regex-textarea" placeholder="Enter regex patterns to automatically block matching listeners (EXAMPLE):
+
+eval\s*\(.*\)
+
+location\.href\s*=
+
+Whatever, prob not those though."
+				></textarea>
+				<div class="regex-help">
+					Enter regex patterns, one per line. Empty lines are ignored. Listeners matching any pattern will be automatically blocked. Unsafe nested repetition, repeated alternation, and backreferences are rejected.
+				</div>
+			</div>
+			<div class="regex-actions">
+				<button class="regex-btn-action regex-btn-cancel" id="regex-cancel">Cancel</button>
+				<button class="regex-btn-action regex-btn-save" id="regex-save">Save & Apply</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Settings Modal - UPDATED WITH SYNTAX HIGHLIGHTING CHECKBOX -->
+	<div class="settings-modal" id="settings-modal">
+		<div class="settings-editor">
+			<div class="settings-header">
+				Settings
+			</div>
+			<div class="settings-content">
+				<!-- Combined Settings Section -->
+				<div class="settings-section">
+					<div class="settings-section-title">Listener Detection & Code Display</div>
+					
+					<!-- Checkboxes in one row - UPDATED with syntax highlighting -->
+					<div class="settings-row">
+						<label class="settings-checkbox-label">
+							<input type="checkbox" id="dedupe-toggle" class="settings-checkbox">
+							<span class="settings-checkbox-text">Enable duplicate detection</span>
+						</label>
+						<label class="settings-checkbox-label">
+							<input type="checkbox" id="prettify-toggle" class="settings-checkbox">
+							<span class="settings-checkbox-text">Auto-prettify code</span>
+						</label>
+					</div>
+					
+					<!-- NEW: Second row of checkboxes -->
+					<div class="settings-row">
+						<label class="settings-checkbox-label">
+							<input type="checkbox" id="syntax-highlight-toggle" class="settings-checkbox">
+							<span class="settings-checkbox-text">Enable syntax highlighting (highlight.js)</span>
+						</label>
+					</div>
+					
+					<!-- Code settings in one row -->
+					<div class="settings-row">
+						<div class="settings-input-group">
+							<label class="settings-input-label">Expand threshold:</label>
+							<input type="number" class="settings-input-small" id="expand-threshold-input" min="500" max="10000" step="100">
+						</div>
+						<div class="settings-input-group">
+							<label class="settings-input-label">Max lines:</label>
+							<input type="number" class="settings-input-small" id="max-lines-input" min="10" max="100" step="5">
+						</div>
+						<div class="settings-input-group">
+							<label class="settings-input-label">Font size:</label>
+							<input type="number" class="settings-input-small" id="font-size-input" min="8" max="18" step="1">
+						</div>
+					</div>
+				</div>
+
+				<!-- Message Debugging Section -->
+				<div class="settings-section">
+					<div class="settings-section-title">Message Debugging</div>
+					<div class="settings-row">
+						<label class="settings-checkbox-label">
+							<input type="checkbox" id="message-console-log-toggle" class="settings-checkbox">
+							<span class="settings-checkbox-text">Console log messages (colorized)</span>
+						</label>
+						<label class="settings-checkbox-label">
+							<input type="checkbox" id="message-debug-break-toggle" class="settings-checkbox">
+							<span class="settings-checkbox-text">Break on matching message</span>
+						</label>
+					</div>
+					<input type="text" class="settings-input" id="message-debug-match-input" placeholder="Break when message matches regex">
+					<div class="settings-help">Match is case-insensitive regex against the first 64K characters of the payload text. Unsafe patterns are rejected.</div>
+				</div>
+
+				<!-- Performance Section -->
+				<div class="settings-section">
+					<div class="settings-section-title">Performance</div>
+					<div class="settings-row">
+						<label class="settings-checkbox-label">
+							<input type="checkbox" id="flood-protection-toggle" class="settings-checkbox">
+							<span class="settings-checkbox-text">Flood protection (drop excess messages under extreme volume)</span>
+						</label>
+					</div>
+					<div class="settings-row">
+						<div class="settings-input-group">
+							<label class="settings-input-label">Max captured message size (chars, 0 = automatic 64K):</label>
+							<input type="number" class="settings-input-small" id="max-capture-size-input" min="0" max="262144" step="1024">
+						</div>
+					</div>
+					<div class="settings-help">Captures have a 256K hard safety ceiling. Dropped messages are counted and truncated captures are flagged.</div>
+				</div>
+
+				<!-- External Logging Section -->
+				<div class="settings-section">
+					<div class="settings-section-title">External Logging</div>
+					<input type="text" class="settings-input" id="logging-url-input" placeholder="https://your-server.com/api/listeners">
+					<div class="settings-help">Optional: URL to send detected listeners to</div>
+				</div>
+
+				<!-- Data Management Section - Simplified -->
+				<div class="settings-section">
+					<div class="settings-section-title">Data Management</div>
+					
+					<!-- URLs and Listeners side by side -->
+					<div class="settings-data-row">
+						<div class="settings-data-column">
+							<div class="settings-subsection-title">Blocked URLs</div>
+							<div class="settings-buttons">
+								<button class="settings-btn-action settings-btn-export" id="export-urls-btn">Export</button>
+								<button class="settings-btn-action settings-btn-import" id="import-urls-btn">Import</button>
+								<button class="settings-btn-action settings-btn-clear" id="clear-urls-btn">Clear</button>
+							</div>
+						</div>
+						<div class="settings-data-column">
+							<div class="settings-subsection-title">Blocked Listeners</div>
+							<div class="settings-buttons">
+								<button class="settings-btn-action settings-btn-export" id="export-listeners-btn">Export</button>
+								<button class="settings-btn-action settings-btn-import" id="import-listeners-btn">Import</button>
+								<button class="settings-btn-action settings-btn-clear" id="clear-listeners-btn">Clear</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="settings-actions">
+				<button class="settings-btn-action settings-btn-cancel" id="settings-cancel">Cancel</button>
+				<button class="settings-btn-action settings-btn-save" id="settings-save">Save</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Hidden file inputs for import functionality -->
+	<input type="file" id="import-urls-file" class="hidden-file-input" accept=".json">
+	<input type="file" id="import-listeners-file" class="hidden-file-input" accept=".json">
+</body>
+</html>
