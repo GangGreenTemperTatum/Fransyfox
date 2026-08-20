@@ -1,5 +1,21 @@
 # Fransceiver
 
+<div align="center">
+
+**Watch every `postMessage` on the wire. Intercept, splice, and transmit your own.**
+
+*KISS tooling for bug bounty and client-side security research — one panel, two browsers.*
+
+[![GitHub release](https://img.shields.io/github/v/release/GangGreenTemperTatum/Fransceiver)](https://github.com/GangGreenTemperTatum/Fransceiver/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/GangGreenTemperTatum/Fransceiver/ci.yml?branch=main&label=CI)](https://github.com/GangGreenTemperTatum/Fransceiver/actions)
+[![E2E](https://img.shields.io/github/actions/workflow/status/GangGreenTemperTatum/Fransceiver/ci.yml?branch=main&label=Firefox%20e2e)](https://github.com/GangGreenTemperTatum/Fransceiver/actions)
+[![Chrome](https://img.shields.io/badge/Chrome-MV3-blue)](https://github.com/GangGreenTemperTatum/Fransceiver#install)
+[![Firefox](https://img.shields.io/badge/Firefox-128%2B-orange)](https://github.com/GangGreenTemperTatum/Fransceiver#install)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/GangGreenTemperTatum/Fransceiver?style=social)](https://github.com/GangGreenTemperTatum/Fransceiver/stargazers)
+
+</div>
+
 Fransceiver (pronounced *frans-SEE-ver*) is a browser extension that watches
 `postMessage` traffic on every web page you visit. Like a radio transceiver,
 it picks up the signals others send — and lets you transmit your own.
@@ -14,6 +30,19 @@ Available for **Chrome/Chromium** (MV3 side panel) and **Firefox 128+**
 > **Named in honor of [Frans Rosén](https://twitter.com/fransrosen) and his
 > original [postMessage-tracker](https://github.com/fransr/postMessage-tracker).**
 > This extension exists because of him — [full credits below](#credits--hall-of-fame).
+
+## Screenshots
+
+<table>
+<tr>
+<td align="center"><img src="assets/screenshots/fransceiver-1.png" alt="Fransceiver" width="420"/><br><b>Fransceiver</b></td>
+<td align="center"><img src="assets/screenshots/fransceiver-2.png" alt="Fransceiver" width="420"/><br><b>Fransceiver</b></td>
+</tr>
+<tr>
+<td align="center"><img src="assets/screenshots/fransceiver-3.png" alt="Fransceiver" width="420"/><br><b>Fransceiver</b></td>
+<td align="center"><img src="assets/screenshots/fransceiver-4.png" alt="Fransceiver" width="420"/><br><b>Fransceiver</b></td>
+</tr>
+</table>
 
 ## Why the name
 
@@ -66,34 +95,34 @@ All upstream work is MIT-licensed — see [LICENSE](LICENSE).
 - **Import/export** — blocked lists, listeners, messages, and findings as JSON.
 - **External logging** — forward detected listeners to your own endpoint.
 
-## Build
+## Install
+
+### Release artifact (no build needed)
+
+Grab `fransceiver-v<tag>-chrome.zip` / `fransceiver-v<tag>-firefox.zip` from
+[Releases](https://github.com/GangGreenTemperTatum/Fransceiver/releases):
+
+- **Chrome**: unzip, then `chrome://extensions` → **Developer mode** →
+  **Load unpacked** → the extracted folder. Click the toolbar icon to open
+  the side panel.
+- **Firefox**: unzip, then `about:debugging#/runtime/this-firefox` →
+  **Load Temporary Add-on…** → the extracted `manifest.json`. Click the
+  toolbar button to toggle the sidebar.
+
+### Build from source
 
 ```bash
 npm install
 npm run build      # emits dist/chrome/ and dist/firefox/
 ```
 
-Quality gates: `npm run typecheck`, `npm run lint`, `npm run test`.
+Then load `dist/chrome/` (Chrome) or `dist/firefox/manifest.json` (Firefox)
+the same way as above. Quality gates: `npm run typecheck`, `npm run lint`,
+`npm run test`.
 
-## Install
-
-### Chrome / Chromium
-
-1. `chrome://extensions` → enable **Developer mode**
-2. **Load unpacked** → select `dist/chrome/`
-3. Click the toolbar icon to open the side panel for the active tab.
-
-### Firefox (128+)
-
-Temporary load (development):
-
-1. Open `about:debugging#/runtime/this-firefox`
-2. **Load Temporary Add-on…** → select `dist/firefox/manifest.json`
-3. Click the toolbar button to toggle the Fransceiver sidebar. The panel
-   follows the active tab.
-
-Permanent install requires an AMO-signed package (add-on ID and homepage
-already point at this repo: `fransceiver@GangGreenTemperTatum.github.io`).
+Permanent Firefox install requires an AMO-signed package (add-on ID and
+homepage already point at this repo:
+`fransceiver@GangGreenTemperTatum.github.io`).
 
 ### Firefox vs Chrome
 
