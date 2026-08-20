@@ -1,4 +1,4 @@
-// DevTools page script for Fransceiver.
+// DevTools page script for Fransyfox.
 // Handle one-shot openResource requests so service-worker restarts cannot lose
 // the knowledge that DevTools is open for this tab.
 chrome.runtime.onMessage.addListener((msg: unknown, _sender, sendResponse) => {

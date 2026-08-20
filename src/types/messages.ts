@@ -94,14 +94,14 @@ export type PortResponseMessage =
     };
 
 export type BridgeWindowMessage =
-  | { type: 'FRANSCEIVER_DATA'; detail: ListenerRecord }
-  | { type: 'FRANSCEIVER_EVENT'; detail: MessageEventRecord }
-  | { type: 'FRANSCEIVER_RULES'; detail: { rules: MatchReplaceRule[] } }
-  | { type: 'FRANSCEIVER_SETTINGS'; detail: MessageDebugSettings }
-  | { type: 'FRANSCEIVER_ACTIVE'; detail: { active: boolean } }
-  | { type: 'FRANSCEIVER_BLACKLIST'; detail: { blacklist: string[] } }
+  | { type: 'FRANSYFOX_DATA'; detail: ListenerRecord }
+  | { type: 'FRANSYFOX_EVENT'; detail: MessageEventRecord }
+  | { type: 'FRANSYFOX_RULES'; detail: { rules: MatchReplaceRule[] } }
+  | { type: 'FRANSYFOX_SETTINGS'; detail: MessageDebugSettings }
+  | { type: 'FRANSYFOX_ACTIVE'; detail: { active: boolean } }
+  | { type: 'FRANSYFOX_BLACKLIST'; detail: { blacklist: string[] } }
   | {
-      type: 'FRANSCEIVER_SEND';
+      type: 'FRANSYFOX_SEND';
       detail: {
         target: 'self' | 'top' | 'parent' | 'opener';
         payload: string;

@@ -19,18 +19,18 @@ import { MAX_USER_REGEX_RULES, compileSafeRegex, limitRegexInput } from './share
 import { normalizeBoolean, normalizeMatchReplaceRules, normalizeMessageDebugSettings, normalizeString, normalizeStringArray } from './contracts/state';
 import type { ListenerRecord, MessageEventRecord, FrameNode, FrameSeverity } from './types/listener';
 import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
-// Background script for Fransceiver - V3 with State Persistence Fix and Regex Support
-const { STORAGE_KEYS, CONTENT_TYPE_JSON, EXTENSION_BLACKLIST } = FransceiverConstants;
-const { extractJsUrlFromStack } = FransceiverUrlUtils;
-const { PORT: PORT_MESSAGES } = FransceiverMessages;
-const log = FransceiverLogger.scoped('background');
+// Background script for Fransyfox - V3 with State Persistence Fix and Regex Support
+const { STORAGE_KEYS, CONTENT_TYPE_JSON, EXTENSION_BLACKLIST } = FransyfoxConstants;
+const { extractJsUrlFromStack } = FransyfoxUrlUtils;
+const { PORT: PORT_MESSAGES } = FransyfoxMessages;
+const log = FransyfoxLogger.scoped('background');
 const EVENT_STORE_MAX_EVENTS = 5000;
 const EVENT_STORE_MAX_DATA_CHARS = 16 * 1024 * 1024;
 const EVENT_APPEND_NOTIFY_DELAY_MS = 100;
-const eventStore = FransceiverEventStore.createPersistentEventStore({
+const eventStore = FransyfoxEventStore.createPersistentEventStore({
     maxEvents: EVENT_STORE_MAX_EVENTS,
     maxDataChars: EVENT_STORE_MAX_DATA_CHARS,
-    databaseName: 'FransceiverMessageEvents',
+    databaseName: 'FransyfoxMessageEvents',
     storeName: 'snapshots',
     snapshotKey: 'messages',
     // Snapshot writes clone-free but still cover the whole buffer; throttle
@@ -57,8 +57,8 @@ interface AddListenerResult {
     changedTabIds: number[];
 }
 const CONTENT_SCRIPT_IDS: Record<string, string> = {
-    MAIN: 'fransceiver-main-world',
-    BRIDGE: 'fransceiver-bridge-world'
+    MAIN: 'fransyfox-main-world',
+    BRIDGE: 'fransyfox-bridge-world'
 };
 const DYNAMIC_CONTENT_SCRIPTS: chrome.scripting.RegisteredContentScript[] = [
     {
@@ -230,15 +230,15 @@ class PersistentState {
                 await chrome.storage.local.remove('tab_listener_keys');
             }
             catch (error) {
-                log.warn('Fransceiver: Failed to remove legacy listener keys:', error);
+                log.warn('Fransyfox: Failed to remove legacy listener keys:', error);
             }
-            log.info('Fransceiver: State loaded from storage', {
+            log.info('Fransyfox: State loaded from storage', {
                 tabs: Object.keys(tab_listeners).length,
                 totalListeners: Object.values(tab_listeners).reduce((sum, listeners) => sum + listeners.length, 0)
             });
         }
         catch (error) {
-            log.error('Fransceiver: Failed to load state from storage:', error);
+            log.error('Fransyfox: Failed to load state from storage:', error);
             this.isLoaded = true; // Continue with empty state
         }
     }
@@ -252,7 +252,7 @@ class PersistentState {
             });
         }
         catch (error) {
-            log.error('Fransceiver: Failed to save state to storage:', error);
+            log.error('Fransyfox: Failed to save state to storage:', error);
         }
     }
     // Trailing throttle: unlike a pure debounce, continuous listener traffic
@@ -375,10 +375,10 @@ function compileRegexPatterns() {
             });
         }
         else {
-            log.warn('Fransceiver: Rejected unsafe or invalid regex pattern:', pattern, compiled.error);
+            log.warn('Fransyfox: Rejected unsafe or invalid regex pattern:', pattern, compiled.error);
         }
     }
-    log.info('Fransceiver: Compiled regex patterns:', compiledRegex.length);
+    log.info('Fransyfox: Compiled regex patterns:', compiledRegex.length);
 }
 // Debounced regex compilation to batch rapid changes
 const debouncedCompileRegex = (function () {
@@ -421,7 +421,7 @@ function loadSettings() {
         messageDebugBreakMatch = debugSettings.debugBreakMatch;
         messageMaxCaptureSize = debugSettings.maxCapturedMessageSize;
         compileRegexPatterns();
-        log.info('Fransceiver: Loaded settings - dedupe:', dedupeEnabled, 'active:', extensionActive, 'blocked listeners:', blockedListeners.length, 'blocked URLs:', blockedUrls.length, 'blocked regex:', blockedRegex.length);
+        log.info('Fransyfox: Loaded settings - dedupe:', dedupeEnabled, 'active:', extensionActive, 'blocked listeners:', blockedListeners.length, 'blocked URLs:', blockedUrls.length, 'blocked regex:', blockedRegex.length);
         broadcastMessageDebugSettings();
         // Signal that settings are loaded
         settingsLoadedResolve();
@@ -435,23 +435,23 @@ chrome.storage.onChanged.addListener((changes: Record<string, chrome.storage.Sto
         }
         if (changes[STORAGE_KEYS.BLOCKED_LISTENERS]) {
             blockedListeners = normalizeStringArray(changes[STORAGE_KEYS.BLOCKED_LISTENERS].newValue);
-            log.info('Fransceiver: Updated blocked listeners:', blockedListeners.length);
+            log.info('Fransyfox: Updated blocked listeners:', blockedListeners.length);
             scheduleRefreshCount(); // Update badge count when blocked listeners change
         }
         if (changes[STORAGE_KEYS.BLOCKED_URLS]) {
             blockedUrls = normalizeStringArray(changes[STORAGE_KEYS.BLOCKED_URLS].newValue);
-            log.info('Fransceiver: Updated blocked URLs:', blockedUrls.length);
+            log.info('Fransyfox: Updated blocked URLs:', blockedUrls.length);
             scheduleRefreshCount(); // Update badge count when blocked URLs change
         }
         if (changes[STORAGE_KEYS.BLOCKED_REGEX]) {
             blockedRegex = normalizeStringArray(changes[STORAGE_KEYS.BLOCKED_REGEX].newValue).slice(0, MAX_USER_REGEX_RULES);
             debouncedCompileRegex();
-            log.info('Fransceiver: Updated blocked regex patterns:', blockedRegex.length);
+            log.info('Fransyfox: Updated blocked regex patterns:', blockedRegex.length);
             scheduleRefreshCount(); // Update badge count when regex patterns change
         }
         if (changes[STORAGE_KEYS.PRESERVE_LOG_ENABLED]) {
             preserveLogEnabled = normalizeBoolean(changes[STORAGE_KEYS.PRESERVE_LOG_ENABLED].newValue, false);
-            log.info('Fransceiver: Updated preserve log:', preserveLogEnabled);
+            log.info('Fransyfox: Updated preserve log:', preserveLogEnabled);
         }
         if (changes[STORAGE_KEYS.MATCH_REPLACE_RULES]) {
             matchReplaceRules = normalizeMatchReplaceRules(changes[STORAGE_KEYS.MATCH_REPLACE_RULES].newValue);
@@ -546,7 +546,7 @@ function setExtensionActiveState(nextActive: boolean, options: ExtensionActiveOp
         chrome.storage.local.set({ [STORAGE_KEYS.EXTENSION_ACTIVE]: extensionActive });
     }
     if (changed) {
-        log.info('Fransceiver: Extension active state changed:', extensionActive);
+        log.info('Fransyfox: Extension active state changed:', extensionActive);
     }
     refreshCount();
     scheduleNotifyPanels();
@@ -571,14 +571,14 @@ async function registerTrackerContentScripts() {
         const missing = DYNAMIC_CONTENT_SCRIPTS.filter((script) => !existingIds.has(script.id));
         if (missing.length > 0) {
             await chrome.scripting.registerContentScripts(missing);
-            log.info('Fransceiver: Registered content scripts:', missing.map((script) => script.id));
+            log.info('Fransyfox: Registered content scripts:', missing.map((script) => script.id));
         }
     }
     catch (error: unknown) {
         if (error instanceof Error && error.message.includes('Duplicate script ID')) {
             return;
         }
-        log.error('Fransceiver: Failed to register content scripts:', error);
+        log.error('Fransyfox: Failed to register content scripts:', error);
     }
 }
 async function unregisterTrackerContentScripts() {
@@ -586,10 +586,10 @@ async function unregisterTrackerContentScripts() {
         return;
     try {
         await chrome.scripting.unregisterContentScripts({ ids: Object.values(CONTENT_SCRIPT_IDS) });
-        log.info('Fransceiver: Unregistered content scripts');
+        log.info('Fransyfox: Unregistered content scripts');
     }
     catch (error) {
-        log.error('Fransceiver: Failed to unregister content scripts:', error);
+        log.error('Fransyfox: Failed to unregister content scripts:', error);
     }
 }
 async function synchronizeContentScripts() {
@@ -604,7 +604,7 @@ async function synchronizeContentScripts() {
         }
     })
         .catch((error: unknown) => {
-        log.error('Fransceiver: Failed to synchronize content scripts:', error);
+        log.error('Fransyfox: Failed to synchronize content scripts:', error);
     });
     return contentScriptSyncPromise;
 }
@@ -634,7 +634,7 @@ async function injectIntoExistingTabs() {
         }
     }
     catch (error) {
-        log.error('Fransceiver: Failed to inject into existing tabs:', error);
+        log.error('Fransyfox: Failed to inject into existing tabs:', error);
     }
 }
 // Build a STATE message scoped to one tab. The panel owns URL display
@@ -678,7 +678,7 @@ async function initializeServiceWorker() {
         }
     }
     catch (error) {
-        log.error('Fransceiver: Failed to query active tab:', error);
+        log.error('Fransyfox: Failed to query active tab:', error);
     }
 }
 // Trailing throttle for badge refreshes - refreshCount filters every listener
@@ -873,7 +873,7 @@ function severityFromFindings(findings: unknown): FrameSeverity {
     for (const finding of findings) {
         const id = finding && typeof finding === 'object' ? (finding as Record<string, unknown>).id : null;
         if (typeof id !== 'string') continue;
-        const rule = FransceiverFindings ? FransceiverFindings.getRuleById(id) : null;
+        const rule = FransyfoxFindings ? FransyfoxFindings.getRuleById(id) : null;
         const severity = rule && typeof rule.severity === 'string' ? rule.severity : null;
         if (severity && SEVERITY_RANK[severity] > bestRank) {
             bestRank = SEVERITY_RANK[severity];
@@ -945,7 +945,7 @@ const frameStructureRefreshScheduler = createKeyedTaskScheduler<number>({
     delayMs: FRAME_REFRESH_DEBOUNCE_MS,
     run: refreshFrameStructure,
     onError: (error, tabId) => {
-        log.warn('Fransceiver: Failed to refresh frame structure for tab', tabId, error);
+        log.warn('Fransyfox: Failed to refresh frame structure for tab', tabId, error);
     }
 });
 function scheduleFrameStructureRefresh(tabId: number): void {
@@ -980,7 +980,7 @@ const tabDroppedEvents: Record<string, number> = {};
 function noteDroppedEvents(tabId: number | null | undefined, dropped: number) {
     if (typeof tabId !== 'number' || !(dropped > 0)) return;
     tabDroppedEvents[String(tabId)] = (tabDroppedEvents[String(tabId)] || 0) + dropped;
-    log.warn('Fransceiver: Flood protection dropped', dropped, 'events for tab', tabId);
+    log.warn('Fransyfox: Flood protection dropped', dropped, 'events for tab', tabId);
 }
 let pendingEventAppends: Array<Record<string, unknown>> = [];
 let pendingEventFromVersion: number | null = null;
@@ -993,7 +993,7 @@ function postToPanelPort(port: chrome.runtime.Port, payload: unknown) {
         port.postMessage(payload);
     }
     catch (error) {
-        log.info('Fransceiver: Failed to post panel event payload:', error);
+        log.info('Fransyfox: Failed to post panel event payload:', error);
     }
 }
 
@@ -1203,11 +1203,11 @@ function logListener(data: ListenerRecord) {
                 headers: { "Content-Type": CONTENT_TYPE_JSON },
                 body: JSON.stringify(data)
             }).catch((e: unknown) => {
-                log.error('Fransceiver: Failed to log listener:', e);
+                log.error('Fransyfox: Failed to log listener:', e);
             });
         }
         catch (e) {
-            log.error('Fransceiver: Failed to log listener:', e);
+            log.error('Fransyfox: Failed to log listener:', e);
         }
     });
 }
@@ -1250,11 +1250,11 @@ function findingsEqual(
     return true;
 }
 function applyFindingsToListener(listener: ListenerRecord) {
-    if (!listener || !globalThis.FransceiverFindings)
+    if (!listener || !globalThis.FransyfoxFindings)
         return false;
-    const result = FransceiverFindings.evaluateListener(listener) || { findings: [], errors: [] };
+    const result = FransyfoxFindings.evaluateListener(listener) || { findings: [], errors: [] };
     const findings = result.findings || [];
-    const version = FransceiverFindings.version || 1;
+    const version = FransyfoxFindings.version || 1;
     const existing = listener.findings;
     const existingVersion = listener.findingsVersion;
     const hasFindings = findings.length > 0;
@@ -1276,7 +1276,7 @@ function applyFindingsToListener(listener: ListenerRecord) {
     return changed;
 }
 function backfillFindingsForAllTabs() {
-    if (!globalThis.FransceiverFindings)
+    if (!globalThis.FransyfoxFindings)
         return false;
     let changed = false;
     for (const listeners of Object.values(tab_listeners)) {
@@ -1416,7 +1416,7 @@ function isListenerMatchedByRegex(listener: ListenerRecord) {
             }
         }
         catch (error) {
-            log.warn('Fransceiver: Error testing regex pattern:', compiled.pattern, error);
+            log.warn('Fransyfox: Error testing regex pattern:', compiled.pattern, error);
         }
     }
     return false;
@@ -1451,7 +1451,7 @@ async function addListener(tabId: number, listener: ListenerRecord) {
     sanitizeListenerRecord(listener);
     // Simple extension filter - only check for wappalyzer and domlogger
     if (isFromExtension(listener.listener, listener.stack)) {
-        log.info('Fransceiver: Ignoring extension listener');
+        log.info('Fransyfox: Ignoring extension listener');
         return { added: false, changedTabIds: [] } satisfies AddListenerResult;
     }
     if (!tab_listeners[tabId]) {
@@ -1610,7 +1610,7 @@ chrome.runtime.onMessage.addListener(function (msg: unknown, sender: chrome.runt
                 }
                 persistentState.debouncedSave();
             }
-            log.info('Fransceiver: Dedupe setting updated to:', dedupeEnabled);
+            log.info('Fransyfox: Dedupe setting updated to:', dedupeEnabled);
             refreshCount(); // Update badge count when dedupe setting changes
             sendResponse({ success: true });
             return;
@@ -1631,7 +1631,7 @@ chrome.runtime.onMessage.addListener(function (msg: unknown, sender: chrome.runt
                     delete listener.findings;
                 }
                 if (listener) {
-                    listener.findingsVersion = FransceiverFindings ? (FransceiverFindings.version || 1) : 1;
+                    listener.findingsVersion = FransyfoxFindings ? (FransyfoxFindings.version || 1) : 1;
                 }
             }
             if (cleared > 0) {
@@ -1757,7 +1757,7 @@ chrome.runtime.onMessage.addListener(function (msg: unknown, sender: chrome.runt
         }
         const runtimeLog = getStringOrEmpty(safeMsgRecord.log);
         if (runtimeLog) {
-            log.info('Fransceiver Log:', runtimeLog);
+            log.info('Fransyfox Log:', runtimeLog);
         }
         else if (changedListenerTabIds.length > 0) {
             // Badge and panels only change when listener data changed -
@@ -1770,7 +1770,7 @@ chrome.runtime.onMessage.addListener(function (msg: unknown, sender: chrome.runt
         }
         sendResponse({ success: true });
     })().catch((error: unknown) => {
-        log.error('Fransceiver: Message handler error:', error);
+        log.error('Fransyfox: Message handler error:', error);
         sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
     });
     return true; // Keep message channel open for async response
@@ -1945,4 +1945,4 @@ chrome.runtime.onSuspend.addListener(() => {
 });
 // Initialize immediately
 initializeServiceWorker();
-log.info('Fransceiver: Background script initialized with state persistence and regex support');
+log.info('Fransyfox: Background script initialized with state persistence and regex support');

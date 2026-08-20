@@ -2,8 +2,8 @@ import { parsePortResponseMessage } from './contracts/messages';
 import { MAX_USER_REGEX_RULES, compileSafeRegex, limitRegexInput } from './shared/safe-regex';
 import type { ListenerRecord, MessageEventRecord, FrameNode } from './types/listener';
 import type { MatchReplaceRule } from './types/settings';
-// Main panel script for Fransceiver - Optimized with Pre-loading and Port Reconnection Fix
-const mainLog = FransceiverLogger.scoped('panel');
+// Main panel script for Fransyfox - Optimized with Pre-loading and Port Reconnection Fix
+const mainLog = FransyfoxLogger.scoped('panel');
 
 type ViewMode = 'listeners' | 'messages' | 'findings' | 'match' | 'map' | 'timeline';
 
@@ -463,24 +463,24 @@ class PanelMain {
         this._grepRegexSaveTimer = null;
         // Bound listener functions for proper cleanup on reconnect
         this._onPortMessage = (msg: unknown) => {
-            mainLog.info("Fransceiver: message received:", msg);
+            mainLog.info("Fransyfox: message received:", msg);
             this.pendingRequests = Math.max(0, this.pendingRequests - 1);
             void this.handleBackgroundMessage(msg);
         };
         this._onPortDisconnect = () => {
-            mainLog.info('Fransceiver: Port disconnected');
+            mainLog.info('Fransyfox: Port disconnected');
             this.isPortConnected = false;
             if (chrome.runtime.lastError) {
-                mainLog.error('Fransceiver: Port error:', chrome.runtime.lastError);
+                mainLog.error('Fransyfox: Port error:', chrome.runtime.lastError);
             }
             // Don't attempt reconnection if panel is being closed
             if (!document.hidden) {
-                mainLog.info('Fransceiver: Attempting to reconnect port...');
+                mainLog.info('Fransyfox: Attempting to reconnect port...');
                 setTimeout(() => {
                     try {
                         this.connectPort();
                     } catch (err: unknown) {
-                        mainLog.error('Fransceiver: Port reconnection failed:', err);
+                        mainLog.error('Fransyfox: Port reconnection failed:', err);
                     }
                 }, 100); // Small delay before reconnection
             }
@@ -554,10 +554,10 @@ class PanelMain {
                 await Promise.all([this.requestFrameTree(), this.requestEvents()]);
             }
             this.refreshDisplay(false);
-            mainLog.info('Fransceiver panel initialized with pre-loading optimization and port reconnection');
+            mainLog.info('Fransyfox panel initialized with pre-loading optimization and port reconnection');
         }
         catch (error) {
-            mainLog.error('Fransceiver: Panel initialization error:', error);
+            mainLog.error('Fransyfox: Panel initialization error:', error);
             this.ui.displayListeners([], 'Error loading', () => { });
         }
     }
@@ -571,17 +571,17 @@ class PanelMain {
                 this.port.disconnect();
             }
             this.port = chrome.runtime.connect({
-                name: "Fransceiver Communication"
+                name: "Fransyfox Communication"
             });
             this.isPortConnected = true;
             this.setupPortCommunication();
-            mainLog.info('Fransceiver: Port connected successfully');
+            mainLog.info('Fransyfox: Port connected successfully');
             // Request initial data immediately after connection
             void this.requestData();
             void this.requestEvents();
         }
         catch (error) {
-            mainLog.error('Fransceiver: Failed to connect port:', error);
+            mainLog.error('Fransyfox: Failed to connect port:', error);
             this.isPortConnected = false;
             throw error;
         }
@@ -597,13 +597,13 @@ class PanelMain {
     // Safe method to send messages with automatic reconnection
     async sendMessage(message: unknown, retryCount = 0): Promise<boolean> {
         if (retryCount >= this.maxRetries) {
-            mainLog.error('Fransceiver: Max retries reached for message:', message);
+            mainLog.error('Fransyfox: Max retries reached for message:', message);
             return false;
         }
         try {
             // Check if port is connected
             if (!this.isPortConnected || !this.port) {
-                mainLog.info('Fransceiver: Port not connected, attempting to reconnect...');
+                mainLog.info('Fransyfox: Port not connected, attempting to reconnect...');
                 this.connectPort();
             }
             const port = this.port;
@@ -615,7 +615,7 @@ class PanelMain {
             return true;
         }
         catch (error) {
-            mainLog.error('Fransceiver: Error sending message, attempt', retryCount + 1, ':', error);
+            mainLog.error('Fransyfox: Error sending message, attempt', retryCount + 1, ':', error);
             this.isPortConnected = false;
             // Wait a bit and retry
             await new Promise((resolve) => setTimeout(resolve, 200 * (retryCount + 1)));
@@ -625,18 +625,18 @@ class PanelMain {
     // Request data from background script
     async requestData() {
         const success = await this.sendMessage({
-            type: FransceiverMessages.PORT.REQUEST_STATE,
+            type: FransyfoxMessages.PORT.REQUEST_STATE,
             tabId: this.currentTabId
         });
         if (!success) {
-            mainLog.error('Fransceiver: Failed to request data from background script');
+            mainLog.error('Fransyfox: Failed to request data from background script');
             // Show error state or retry later
         }
     }
     async requestEvents() {
-        const success = await this.sendMessage({ type: FransceiverMessages.PORT.REQUEST_EVENTS });
+        const success = await this.sendMessage({ type: FransyfoxMessages.PORT.REQUEST_EVENTS });
         if (!success) {
-            mainLog.error('Fransceiver: Failed to request events from background script');
+            mainLog.error('Fransyfox: Failed to request events from background script');
         }
     }
     // Correlation: tag each message with the listener count in its receiving
@@ -654,11 +654,11 @@ class PanelMain {
     }
     async requestFrameTree() {
         const success = await this.sendMessage({
-            type: FransceiverMessages.PORT.REQUEST_FRAME_TREE,
+            type: FransyfoxMessages.PORT.REQUEST_FRAME_TREE,
             tabId: this.currentTabId
         });
         if (!success) {
-            mainLog.error('Fransceiver: Failed to request frame tree from background script');
+            mainLog.error('Fransyfox: Failed to request frame tree from background script');
         }
     }
     // Fill the composer's frame dropdown from the current frame tree, keeping
@@ -823,7 +823,7 @@ class PanelMain {
     }
     async loadComposerHistory() {
         try {
-            const key = FransceiverConstants.STORAGE_KEYS.COMPOSER_HISTORY;
+            const key = FransyfoxConstants.STORAGE_KEYS.COMPOSER_HISTORY;
             const result: Record<string, unknown> = await new Promise((resolve) => {
                 chrome.storage.local.get([key], (res: Record<string, unknown>) => resolve(res || {}));
             });
@@ -847,24 +847,24 @@ class PanelMain {
         }
         this.renderComposerHistory();
         try {
-            const key = FransceiverConstants.STORAGE_KEYS.COMPOSER_HISTORY;
+            const key = FransyfoxConstants.STORAGE_KEYS.COMPOSER_HISTORY;
             await new Promise<void>((resolve) => {
                 chrome.storage.local.set({ [key]: this.composerHistory }, () => resolve());
             });
         } catch (error) {
-            mainLog.warn('Fransceiver: Failed to persist composer history:', error);
+            mainLog.warn('Fransyfox: Failed to persist composer history:', error);
         }
     }
     async clearComposerHistory() {
         this.composerHistory = [];
         this.renderComposerHistory();
         try {
-            const key = FransceiverConstants.STORAGE_KEYS.COMPOSER_HISTORY;
+            const key = FransyfoxConstants.STORAGE_KEYS.COMPOSER_HISTORY;
             await new Promise<void>((resolve) => {
                 chrome.storage.local.set({ [key]: [] }, () => resolve());
             });
         } catch (error) {
-            mainLog.warn('Fransceiver: Failed to clear composer history:', error);
+            mainLog.warn('Fransyfox: Failed to clear composer history:', error);
         }
     }
     renderComposerHistory() {
@@ -959,7 +959,7 @@ class PanelMain {
     requestExtensionActiveState() {
         chrome.runtime.sendMessage({ action: 'requestExtensionActive' }, (response: { active?: boolean } | undefined) => {
             if (chrome.runtime.lastError) {
-                mainLog.warn('Fransceiver: Failed to fetch extension active state:', chrome.runtime.lastError.message);
+                mainLog.warn('Fransyfox: Failed to fetch extension active state:', chrome.runtime.lastError.message);
                 return;
             }
             if (response && typeof response.active === 'boolean') {
@@ -1066,7 +1066,7 @@ class PanelMain {
                 this.currentTabId = typeof tabs[0].id === 'number' ? tabs[0].id : null;
                 this.currentUrl = tabs[0].url || 'Unknown URL';
                 this.ui.currentTabId = this.currentTabId;
-                mainLog.info('Fransceiver: Current tab updated:', this.currentTabId, this.currentUrl);
+                mainLog.info('Fransyfox: Current tab updated:', this.currentTabId, this.currentUrl);
                 this.updateTabCounts();
                 if (this.viewMode === 'messages') {
                     this.updateMessagesTargetOptions();
@@ -1074,7 +1074,7 @@ class PanelMain {
             }
         }
         catch (error) {
-            mainLog.error('Fransceiver: Failed to query current tab:', error);
+            mainLog.error('Fransyfox: Failed to query current tab:', error);
             this.currentTabId = null;
             this.currentUrl = 'Unknown URL';
             this.ui.currentTabId = null;
@@ -1084,14 +1084,14 @@ class PanelMain {
     async handleBackgroundMessage(msg: unknown) {
         const parsedMessage = parsePortResponseMessage(msg);
         if (!parsedMessage) {
-            mainLog.warn('Fransceiver: Ignoring empty message');
+            mainLog.warn('Fransyfox: Ignoring empty message');
             return;
         }
         if ('extensionActive' in parsedMessage && typeof parsedMessage.extensionActive === 'boolean') {
             this.extensionActive = parsedMessage.extensionActive;
             this.renderStatusBadge();
         }
-        if (parsedMessage.type === FransceiverMessages.PORT.EVENTS) {
+        if (parsedMessage.type === FransyfoxMessages.PORT.EVENTS) {
             this.currentMessages = Array.isArray(parsedMessage.events) ? parsedMessage.events : [];
             this.lastEventsVersion =
                 typeof parsedMessage.version === 'number' ? parsedMessage.version : this.lastEventsVersion;
@@ -1112,7 +1112,7 @@ class PanelMain {
             }
             return;
         }
-        if (parsedMessage.type === FransceiverMessages.PORT.EVENTS_APPEND) {
+        if (parsedMessage.type === FransyfoxMessages.PORT.EVENTS_APPEND) {
             const fromVersion =
                 typeof parsedMessage.fromVersion === 'number' ? parsedMessage.fromVersion : null;
             const nextVersion =
@@ -1123,7 +1123,7 @@ class PanelMain {
                 this.messageDroppedByTab = parsedMessage.droppedByTab;
             }
             if (this.lastEventsVersion < 0 || (fromVersion !== null && fromVersion > this.lastEventsVersion)) {
-                mainLog.warn('Fransceiver: Event version gap detected, requesting fresh snapshot', {
+                mainLog.warn('Fransyfox: Event version gap detected, requesting fresh snapshot', {
                     lastEventsVersion: this.lastEventsVersion,
                     fromVersion,
                     nextVersion
@@ -1154,7 +1154,7 @@ class PanelMain {
             }
             return;
         }
-        if (parsedMessage.type === FransceiverMessages.PORT.EVENTS_CLEARED) {
+        if (parsedMessage.type === FransyfoxMessages.PORT.EVENTS_CLEARED) {
             const clearedTabId = typeof parsedMessage.tabId === 'number' ? parsedMessage.tabId : null;
             const affectsCurrentTab = clearedTabId === null || clearedTabId === this.currentTabId;
             if (clearedTabId !== null) {
@@ -1179,7 +1179,7 @@ class PanelMain {
             }
             return;
         }
-        if (parsedMessage.type === FransceiverMessages.PORT.LISTENERS_CLEARED) {
+        if (parsedMessage.type === FransyfoxMessages.PORT.LISTENERS_CLEARED) {
             this.currentListeners = [];
             if (this.currentTabId !== null) {
                 this.lastListenersByTab[this.currentTabId] = [];
@@ -1190,7 +1190,7 @@ class PanelMain {
             }
             return;
         }
-        if (parsedMessage.type === FransceiverMessages.PORT.FRAME_TREE) {
+        if (parsedMessage.type === FransyfoxMessages.PORT.FRAME_TREE) {
             const frameTabId = typeof parsedMessage.tabId === 'number' ? parsedMessage.tabId : null;
             // Ignore frame trees for other tabs (the hello/global case has no tab).
             if (frameTabId === null || (this.currentTabId !== null && frameTabId !== this.currentTabId)) {
@@ -1209,8 +1209,8 @@ class PanelMain {
             }
             return;
         }
-        if (parsedMessage.type !== FransceiverMessages.PORT.STATE) {
-            mainLog.warn('Fransceiver: Ignoring unexpected message:', parsedMessage);
+        if (parsedMessage.type !== FransyfoxMessages.PORT.STATE) {
+            mainLog.warn('Fransyfox: Ignoring unexpected message:', parsedMessage);
             return;
         }
         // STATE is now scoped to a single tab. The background's hello message
@@ -1242,14 +1242,14 @@ class PanelMain {
             this.lastDataVersion = dataVersion;
             if (isFirstLoad || this.isManualRefresh || dataChanged) {
                 if (isFirstLoad) {
-                    mainLog.info(`Fransceiver: Initial data loaded for tab ${this.currentTabId}:`, `${newListeners.length} listeners`, parsedMessage.cached ? '(cached)' : '(fresh)');
+                    mainLog.info(`Fransyfox: Initial data loaded for tab ${this.currentTabId}:`, `${newListeners.length} listeners`, parsedMessage.cached ? '(cached)' : '(fresh)');
                     this.dataLoaded = true;
                 }
                 else if (dataChanged) {
-                    mainLog.info(`Fransceiver: Listeners updated for tab ${this.currentTabId}:`, `${this.currentListeners.length} -> ${newListeners.length}`);
+                    mainLog.info(`Fransyfox: Listeners updated for tab ${this.currentTabId}:`, `${this.currentListeners.length} -> ${newListeners.length}`);
                 }
                 else {
-                    mainLog.info('Fransceiver: Manual refresh triggered (blocking/unblocking action)');
+                    mainLog.info('Fransyfox: Manual refresh triggered (blocking/unblocking action)');
                 }
                 this.currentListeners = newListeners;
                 this.updateListenersUrlOptions();
@@ -1263,7 +1263,7 @@ class PanelMain {
         }
         else {
             // Fallback: show empty state
-            mainLog.warn('Fransceiver: No current tab ID available');
+            mainLog.warn('Fransyfox: No current tab ID available');
             this.currentListeners = [];
             this.refreshDisplay(!this.isManualRefresh);
             this.isManualRefresh = false;
@@ -1470,7 +1470,7 @@ class PanelMain {
             });
         }
         // "Send to Repeater" from a captured message row loads it into the Composer.
-        document.addEventListener('fransceiver:repeater-load', (event: Event) => {
+        document.addEventListener('fransyfox:repeater-load', (event: Event) => {
             const detail = (event as CustomEvent).detail as {
                 dataText?: string;
                 dataType?: string;
@@ -1482,7 +1482,7 @@ class PanelMain {
             }
         });
         // "Show in timeline" from a captured message row jumps to the timeline.
-        document.addEventListener('fransceiver:show-in-timeline', (event: Event) => {
+        document.addEventListener('fransyfox:show-in-timeline', (event: Event) => {
             const detail = (event as CustomEvent).detail as { id?: number } | null;
             if (detail && typeof detail.id === 'number') {
                 this.showMessageInTimeline(detail.id);
@@ -1532,7 +1532,7 @@ class PanelMain {
         }
         if (this.domCache.listenersClear) {
             this.domCache.listenersClear.addEventListener('click', () => {
-                void this.sendMessage({ type: FransceiverMessages.PORT.CLEAR_LISTENERS, tabId: this.currentTabId });
+                void this.sendMessage({ type: FransyfoxMessages.PORT.CLEAR_LISTENERS, tabId: this.currentTabId });
             });
         }
         this.ui.updateShowBlockedButton();
@@ -1543,7 +1543,7 @@ class PanelMain {
         if (chrome.tabs && chrome.tabs.onActivated) {
             chrome.tabs.onActivated.addListener((activeInfo: { tabId: number }) => {
                 void (async () => {
-                    mainLog.info('Fransceiver: Tab activated:', activeInfo.tabId);
+                    mainLog.info('Fransyfox: Tab activated:', activeInfo.tabId);
                     // Set tab ID immediately to avoid stale filtering of incoming messages
                     this.currentTabId = activeInfo.tabId;
                     this.ui.currentTabId = activeInfo.tabId;
@@ -1568,7 +1568,7 @@ class PanelMain {
             chrome.tabs.onRemoved.addListener((removedTabId: number) => {
                 void (async () => {
                     if (removedTabId === this.currentTabId) {
-                        mainLog.info('Fransceiver: Current tab closed, switching to active tab');
+                        mainLog.info('Fransyfox: Current tab closed, switching to active tab');
                         this.currentTabId = null;
                         this.currentListeners = [];
                         this.lastDataVersion = -1;
@@ -1589,7 +1589,7 @@ class PanelMain {
         if (chrome.tabs && chrome.tabs.onUpdated) {
             chrome.tabs.onUpdated.addListener((tabId: number, changeInfo: { url?: string }) => {
                 if (tabId === this.currentTabId && changeInfo.url) {
-                    mainLog.info('Fransceiver: Tab URL changed:', changeInfo.url);
+                    mainLog.info('Fransyfox: Tab URL changed:', changeInfo.url);
                     this.currentUrl = changeInfo.url;
                     this.refreshDisplay(false);
                 }
@@ -1642,7 +1642,7 @@ class PanelMain {
             this.domCache.messagesExpandAll.addEventListener('click', () => {
                 const allExpanded = this.ui.toggleAllMessagesExpanded();
                 this.storage.saveMessageViewSettings({ allExpanded }).catch((error: unknown) => {
-                    mainLog.error('Fransceiver: Failed to save expand/collapse-all setting:', error);
+                    mainLog.error('Fransyfox: Failed to save expand/collapse-all setting:', error);
                 });
                 this.updateMessagesExpandAllButton();
                 this.refreshDisplay(true);
@@ -1657,7 +1657,7 @@ class PanelMain {
         if (this.domCache.messagesClear) {
             this.domCache.messagesClear.addEventListener('click', () => {
                 void this.sendMessage({
-                    type: FransceiverMessages.PORT.CLEAR_EVENTS,
+                    type: FransyfoxMessages.PORT.CLEAR_EVENTS,
                     tabId: this.currentTabId
                 });
             });
@@ -1727,7 +1727,7 @@ class PanelMain {
             this.domCache.matchReload.addEventListener('click', () => {
                 if (this.currentTabId) {
                     chrome.tabs.reload(this.currentTabId).catch((error: unknown) => {
-                        mainLog.error('Fransceiver: Failed to reload tab:', error);
+                        mainLog.error('Fransyfox: Failed to reload tab:', error);
                     });
                 }
             });
@@ -1758,7 +1758,7 @@ class PanelMain {
             this.domCache.grepCopyBtn.addEventListener('click', () => {
                 const text = this.domCache.grepResults ? this.domCache.grepResults.value : '';
                 navigator.clipboard.writeText(text).catch((err: unknown) => {
-                    mainLog.error('Fransceiver: Failed to copy to clipboard:', err);
+                    mainLog.error('Fransyfox: Failed to copy to clipboard:', err);
                 });
             });
         }
@@ -1972,7 +1972,7 @@ class PanelMain {
             this.refreshDisplay(false);
         }
         catch (error) {
-            mainLog.error('Fransceiver: Failed to toggle extension state:', error);
+            mainLog.error('Fransyfox: Failed to toggle extension state:', error);
         }
         finally {
             this.extensionToggleInProgress = false;
@@ -1997,7 +1997,7 @@ class PanelMain {
     requestPreserveLogState() {
         chrome.runtime.sendMessage({ action: 'requestPreserveLog' }, (response: { enabled?: boolean } | undefined) => {
             if (chrome.runtime.lastError) {
-                mainLog.warn('Fransceiver: Failed to fetch preserve log state:', chrome.runtime.lastError.message);
+                mainLog.warn('Fransyfox: Failed to fetch preserve log state:', chrome.runtime.lastError.message);
                 return;
             }
             if (response && typeof response.enabled === 'boolean') {
@@ -2029,7 +2029,7 @@ class PanelMain {
                 this.preserveLogEnabled = nextState;
             }
         } catch (error) {
-            mainLog.error('Fransceiver: Failed to toggle preserve log:', error);
+            mainLog.error('Fransyfox: Failed to toggle preserve log:', error);
         } finally {
             this.preserveLogToggleInProgress = false;
             this.renderPreserveBadge();
@@ -2221,7 +2221,7 @@ class PanelMain {
             this.syncListenerFilterControls();
             this.updateListenersUrlOptions();
         } catch (error) {
-            mainLog.warn('Fransceiver: Failed to load listener filter settings:', error);
+            mainLog.warn('Fransyfox: Failed to load listener filter settings:', error);
         }
     }
     syncListenerFilterControls() {
@@ -2339,7 +2339,7 @@ class PanelMain {
         this.messageFilterSaveTimer = setTimeout(() => {
             this.messageFilterSaveTimer = null;
             this.persistMessageFilterSettings().catch((error: unknown) => {
-                mainLog.error('Fransceiver: Failed to save message filter settings:', error);
+                mainLog.error('Fransyfox: Failed to save message filter settings:', error);
             });
         }, 180);
     }
@@ -2415,7 +2415,7 @@ class PanelMain {
         if (this.messageFilters.targetFrame !== nextTarget) {
             this.messageFilters.targetFrame = nextTarget;
             this.persistMessageFilterSettings().catch((error: unknown) => {
-                mainLog.error('Fransceiver: Failed to persist corrected target frame filter:', error);
+                mainLog.error('Fransyfox: Failed to persist corrected target frame filter:', error);
             });
         }
     }
@@ -2429,7 +2429,7 @@ class PanelMain {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'fransceiver-postmessage-events.json';
+        a.download = 'fransyfox-postmessage-events.json';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -2447,7 +2447,7 @@ class PanelMain {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'fransceiver-listeners.json';
+        a.download = 'fransyfox-listeners.json';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -2511,7 +2511,7 @@ class PanelMain {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'fransceiver-findings.json';
+        a.download = 'fransyfox-findings.json';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -2524,11 +2524,11 @@ class PanelMain {
             return;
         chrome.runtime.sendMessage({ action: 'clearFindings', tabId: this.currentTabId }, (response: { success?: boolean; error?: string } | undefined) => {
             if (chrome.runtime.lastError) {
-                mainLog.error('Fransceiver: Failed to clear findings:', chrome.runtime.lastError);
+                mainLog.error('Fransyfox: Failed to clear findings:', chrome.runtime.lastError);
                 return;
             }
             if (!response || !response.success) {
-                mainLog.error('Fransceiver: Clear findings failed:', response && response.error);
+                mainLog.error('Fransyfox: Clear findings failed:', response && response.error);
                 return;
             }
             this.resetFindingsFilters();
@@ -2554,7 +2554,7 @@ class PanelMain {
             clearTimeout(this.messageFilterSaveTimer);
             this.messageFilterSaveTimer = null;
             this.persistMessageFilterSettings().catch((error: unknown) => {
-                mainLog.error('Fransceiver: Failed to flush message filter settings on destroy:', error);
+                mainLog.error('Fransyfox: Failed to flush message filter settings on destroy:', error);
             });
         }
         if (this.listenerFilterSaveTimer) {

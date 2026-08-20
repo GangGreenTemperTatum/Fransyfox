@@ -38,22 +38,22 @@
     'event-tracker-content-hook',
     'bitwarden-webauthn',
     'POSTMESSAGE_TRACKER_DATA',
-    'Fransceiver:',
+    'Fransyfox:',
     'FransyTracker:',
     '__postmessagetrackername__'
   ] as const;
 
-  type FransceiverConstantsType = {
+  type FransyfoxConstantsType = {
     STORAGE_KEYS: typeof STORAGE_KEYS;
     CONTENT_TYPE_JSON: string;
     EXTENSION_BLACKLIST: readonly string[];
   };
 
   const globalObj = globalThis as typeof globalThis & {
-    FransceiverConstants?: Partial<FransceiverConstantsType>;
+    FransyfoxConstants?: Partial<FransyfoxConstantsType>;
   };
 
-  globalObj.FransceiverConstants = Object.assign(globalObj.FransceiverConstants || {}, {
+  globalObj.FransyfoxConstants = Object.assign(globalObj.FransyfoxConstants || {}, {
     STORAGE_KEYS,
     CONTENT_TYPE_JSON,
     EXTENSION_BLACKLIST

@@ -11,7 +11,7 @@ export interface MatchReplaceRule {
   replacement: string;
 }
 
-export interface FransceiverSettings {
+export interface FransyfoxSettings {
   dedupeEnabled: boolean;
   extensionActive: boolean;
   blockedListeners: string[];

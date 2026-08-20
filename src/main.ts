@@ -13,10 +13,10 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
 // Main World Content Script - Enhanced PostMessage Tracker
 (function () {
     'use strict';
-    if (window.FransceiverMainLoaded) {
+    if (window.FransyfoxMainLoaded) {
         return;
     }
-    window.FransceiverMainLoaded = true;
+    window.FransyfoxMainLoaded = true;
     let loaded = false;
     const originalFunctionToString = Function.prototype.toString;
     // Store original APIs
@@ -31,7 +31,7 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
     const OriginalCustomEvent = CustomEvent;
     const originalDispatchEvent = EventTarget.prototype.dispatchEvent;
     // Extension identifier for our own listeners
-    const EXTENSION_MARKER = '__FRANSCEIVER_INTERNAL__';
+    const EXTENSION_MARKER = '__FRANSYFOX_INTERNAL__';
     const DEFAULT_EXTENSION_BLACKLIST = [
         'wappalyzer',
         'react-devtools',
@@ -41,8 +41,8 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
         'event-tracker-page-hook',
         'event-tracker-content-hook',
         'bitwarden-webauthn',
-        'FRANSCEIVER_DATA',
-        'Fransceiver:',
+        'FRANSYFOX_DATA',
+        'Fransyfox:',
         'POSTMESSAGE_TRACKER_DATA',
         'FransyTracker:',
         '__postmessagetrackername__'
@@ -109,8 +109,8 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
         }
         return false;
     }
-    const BLACKLIST_TYPE = 'FRANSCEIVER_BLACKLIST';
-    const BLACKLIST_REQUEST_TYPE = 'FRANSCEIVER_BLACKLIST_REQUEST';
+    const BLACKLIST_TYPE = 'FRANSYFOX_BLACKLIST';
+    const BLACKLIST_REQUEST_TYPE = 'FRANSYFOX_BLACKLIST_REQUEST';
     // Stringify a listener once; toString can throw on proxies/revoked functions
     function safeListenerToString(listener: unknown): string {
         try {
@@ -140,14 +140,14 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
         }
         return false;
     }
-    const EVENT_TYPE = 'FRANSCEIVER_EVENT';
-    const RULES_TYPE = 'FRANSCEIVER_RULES';
-    const RULES_REQUEST_TYPE = 'FRANSCEIVER_RULES_REQUEST';
-    const SETTINGS_TYPE = 'FRANSCEIVER_SETTINGS';
-    const SETTINGS_REQUEST_TYPE = 'FRANSCEIVER_SETTINGS_REQUEST';
-    const ACTIVE_TYPE = 'FRANSCEIVER_ACTIVE';
-    const ACTIVE_REQUEST_TYPE = 'FRANSCEIVER_ACTIVE_REQUEST';
-    const SEND_TYPE = 'FRANSCEIVER_SEND';
+    const EVENT_TYPE = 'FRANSYFOX_EVENT';
+    const RULES_TYPE = 'FRANSYFOX_RULES';
+    const RULES_REQUEST_TYPE = 'FRANSYFOX_RULES_REQUEST';
+    const SETTINGS_TYPE = 'FRANSYFOX_SETTINGS';
+    const SETTINGS_REQUEST_TYPE = 'FRANSYFOX_SETTINGS_REQUEST';
+    const ACTIVE_TYPE = 'FRANSYFOX_ACTIVE';
+    const ACTIVE_REQUEST_TYPE = 'FRANSYFOX_ACTIVE_REQUEST';
+    const SEND_TYPE = 'FRANSYFOX_SEND';
     let trackingActive = false;
     let matchReplaceRules: MatchReplaceRule[] = [];
     let compiledMatchReplace: Array<{ pattern: string; replacement: string; regex: RegExp }> = [];
@@ -173,7 +173,7 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
             return false;
         const dataRecord = asRecord(data);
         // Skip our own tracking messages
-        if (dataRecord?.type === 'FRANSCEIVER_DATA') {
+        if (dataRecord?.type === 'FRANSYFOX_DATA') {
             return true;
         }
         if (dataRecord?.type === EVENT_TYPE) {
@@ -225,7 +225,7 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
     const m = function (detail: Record<string, unknown>) {
         if (!trackingActive)
             return;
-        sendToBridge('FRANSCEIVER_DATA', detail);
+        sendToBridge('FRANSYFOX_DATA', detail);
     };
     // Get frame hops info
     const h = function (p?: unknown) {
@@ -439,7 +439,7 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
         }
     }
     catch (e) {
-        console.warn('Fransceiver: Error in onmessage setter hook:', e);
+        console.warn('Fransyfox: Error in onmessage setter hook:', e);
     }
     // Wrapper detection function - enhanced from original
     const c = function (listener: any, listenerStr?: string) {
@@ -487,7 +487,7 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
             const compiled = compileSafeRegex(messageDebugSettings.debugBreakMatch, 'i');
             messageDebugSettings.debugBreakRegex = compiled.regex;
             if (!compiled.regex) {
-                console.warn('Fransceiver: Rejected unsafe or invalid debug break regex:', messageDebugSettings.debugBreakMatch, compiled.error);
+                console.warn('Fransyfox: Rejected unsafe or invalid debug break regex:', messageDebugSettings.debugBreakMatch, compiled.error);
             }
         }
     }
@@ -501,13 +501,13 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
             // Avoid console.trace and live MessageEvent references: both are
             // expensive under message load, while the detached snapshot still
             // contains the complete captured dataText.
-            console.log('%cFransceiver%c postMessage %c' + snapshot.channel, headerStyle, 'color:#111827;font-weight:600;', channelStyle, snapshot);
+            console.log('%cFransyfox%c postMessage %c' + snapshot.channel, headerStyle, 'color:#111827;font-weight:600;', channelStyle, snapshot);
         }
         if (messageDebugSettings.debugBreakEnabled && messageDebugSettings.debugBreakRegex) {
             try {
                 const dataText = typeof payload.dataText === 'string' ? payload.dataText : '';
                 if (messageDebugSettings.debugBreakRegex.test(limitRegexInput(dataText))) {
-                    console.log('%cFransceiver%c debugger break (matched: "' + messageDebugSettings.debugBreakMatch + '")', 'background:#dc2626;color:#fef2f2;padding:2px 6px;border-radius:3px;font-weight:700;', 'color:#111827;font-weight:600;');
+                    console.log('%cFransyfox%c debugger break (matched: "' + messageDebugSettings.debugBreakMatch + '")', 'background:#dc2626;color:#fef2f2;padding:2px 6px;border-radius:3px;font-weight:700;', 'color:#111827;font-weight:600;');
                     debugger;
                 }
             }
@@ -534,7 +534,7 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
                 });
             }
             else {
-                console.warn('Fransceiver: Rejected unsafe or invalid match/replace regex:', rule.pattern, compiled.error);
+                console.warn('Fransyfox: Rejected unsafe or invalid match/replace regex:', rule.pattern, compiled.error);
             }
         }
     }
@@ -565,7 +565,7 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
                 || dataRecord.type === SETTINGS_TYPE || dataRecord.type === SETTINGS_REQUEST_TYPE
                 || dataRecord.type === ACTIVE_TYPE || dataRecord.type === ACTIVE_REQUEST_TYPE
                 || dataRecord.type === BLACKLIST_TYPE || dataRecord.type === BLACKLIST_REQUEST_TYPE
-                || dataRecord.type === 'FRANSCEIVER_DATA') {
+                || dataRecord.type === 'FRANSYFOX_DATA') {
                 return data;
             }
         }
@@ -630,7 +630,7 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
         return patchedMessageEventCache.get(event, matchReplaceGeneration);
     }
     type TrackerMessageListener = ((this: unknown, event: MessageEvent) => unknown) & {
-        __fransceiver_wrapped__?: boolean;
+        __fransyfox_wrapped__?: boolean;
         __postmessagetrackername__?: string;
         name?: string;
     };
@@ -643,7 +643,7 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
                 const patchedEvent = getPatchedMessageEvent(event);
                 return listener.call(this, patchedEvent);
             };
-            wrapped.__fransceiver_wrapped__ = true;
+            wrapped.__fransyfox_wrapped__ = true;
             try {
                 wrapped.__postmessagetrackername__ = listener.__postmessagetrackername__ || listener.name || '';
             }
@@ -775,7 +775,7 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
             return (originalWindowPostMessage as any).call(this, patched, targetOrigin, transfer);
         }
         catch (error) {
-            console.warn('Fransceiver: Error in Window.postMessage hook:', error);
+            console.warn('Fransyfox: Error in Window.postMessage hook:', error);
             return (originalWindowPostMessage as any).apply(this, arguments as any);
         }
     };
@@ -789,7 +789,7 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
             return (originalMessagePortPostMessage as any).call(this, patched, transfer);
         }
         catch (error) {
-            console.warn('Fransceiver: Error in MessagePort.postMessage hook:', error);
+            console.warn('Fransyfox: Error in MessagePort.postMessage hook:', error);
             return (originalMessagePortPostMessage as any).apply(this, arguments as any);
         }
     };
@@ -970,7 +970,7 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
                     data = JSON.parse(rawPayload);
                 }
                 catch {
-                    console.warn('Fransceiver: Composer payload is not valid JSON; sending as string.');
+                    console.warn('Fransyfox: Composer payload is not valid JSON; sending as string.');
                     data = rawPayload;
                 }
             }
@@ -985,14 +985,14 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
                 targetWindow = window.opener as Window | null;
             }
             if (!targetWindow) {
-                console.warn('Fransceiver: Composer target window unavailable:', target);
+                console.warn('Fransyfox: Composer target window unavailable:', target);
                 return;
             }
             (originalWindowPostMessage as (this: Window, message: unknown, targetOrigin: string, transfer?: Transferable[]) => void)
                 .call(targetWindow, data, targetOrigin);
         }
         catch (error) {
-            console.warn('Fransceiver: Composer send failed:', error);
+            console.warn('Fransyfox: Composer send failed:', error);
         }
     }
     document.addEventListener(TRACKER_EVENT_TO_MAIN, onBridgeEnvelope);
@@ -1005,5 +1005,5 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
     sendToBridge(BLACKLIST_REQUEST_TYPE);
     sendToBridge(RULES_REQUEST_TYPE);
     sendToBridge(SETTINGS_REQUEST_TYPE);
-    console.log('Fransceiver: Initialized in', h());
+    console.log('Fransyfox: Initialized in', h());
 })();

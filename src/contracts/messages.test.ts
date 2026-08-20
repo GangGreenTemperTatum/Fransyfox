@@ -66,7 +66,7 @@ describe('contracts/messages', () => {
   });
 
   test('parses bridge tracker message', () => {
-    const msg = parseBridgeWindowMessage({ type: 'FRANSCEIVER_SETTINGS', detail: {} });
+    const msg = parseBridgeWindowMessage({ type: 'FRANSYFOX_SETTINGS', detail: {} });
     expect(msg).toBeTruthy();
   });
 
@@ -81,7 +81,7 @@ describe('contracts/messages', () => {
     };
 
     const bridgeMsg = parseBridgeWindowMessage({
-      type: 'FRANSCEIVER_DATA',
+      type: 'FRANSYFOX_DATA',
       detail: listenerDetail
     });
     expect(bridgeMsg).toBeTruthy();

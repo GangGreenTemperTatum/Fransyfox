@@ -25,24 +25,24 @@ const staticDirs = [
 ];
 
 const entryBuilds = [
-  { entry: 'src/shared/constants.ts', outFile: 'shared/constants.js', name: 'FransceiverSharedConstantsBundle' },
-  { entry: 'src/shared/url-utils.ts', outFile: 'shared/url-utils.js', name: 'FransceiverSharedUrlUtilsBundle' },
-  { entry: 'src/shared/messages.ts', outFile: 'shared/messages.js', name: 'FransceiverSharedMessagesBundle' },
-  { entry: 'src/shared/logger.ts', outFile: 'shared/logger.js', name: 'FransceiverSharedLoggerBundle' },
-  { entry: 'src/shared/event-store.ts', outFile: 'shared/event-store.js', name: 'FransceiverSharedEventStoreBundle' },
-  { entry: 'src/shared/findings.ts', outFile: 'shared/findings.js', name: 'FransceiverSharedFindingsBundle' },
-  { entry: 'src/main.ts', outFile: 'main.js', name: 'FransceiverMainBundle' },
-  { entry: 'src/bridge.ts', outFile: 'bridge.js', name: 'FransceiverBridgeBundle' },
-  { entry: 'src/background.ts', outFile: 'background.js', name: 'FransceiverBackgroundBundle' },
-  { entry: 'src/panel-storage.ts', outFile: 'panel-storage.js', name: 'FransceiverPanelStorageBundle' },
-  { entry: 'src/panel-ui-messages.ts', outFile: 'panel-ui-messages.js', name: 'FransceiverPanelUIMessagesBundle' },
-  { entry: 'src/panel-ui-findings.ts', outFile: 'panel-ui-findings.js', name: 'FransceiverPanelUIFindingsBundle' },
-  { entry: 'src/panel-ui-map.ts', outFile: 'panel-ui-map.js', name: 'FransceiverPanelUIMapBundle' },
-  { entry: 'src/panel-ui-timeline.ts', outFile: 'panel-ui-timeline.js', name: 'FransceiverPanelUITimelineBundle' },
-  { entry: 'src/panel-ui.ts', outFile: 'panel-ui.js', name: 'FransceiverPanelUIBundle' },
-  { entry: 'src/panel-modals.ts', outFile: 'panel-modals.js', name: 'FransceiverPanelModalsBundle' },
-  { entry: 'src/panel-main.ts', outFile: 'panel-main.js', name: 'FransceiverPanelMainBundle' },
-  { entry: 'src/devtools.ts', outFile: 'devtools.js', name: 'FransceiverDevtoolsBundle' }
+  { entry: 'src/shared/constants.ts', outFile: 'shared/constants.js', name: 'FransyfoxSharedConstantsBundle' },
+  { entry: 'src/shared/url-utils.ts', outFile: 'shared/url-utils.js', name: 'FransyfoxSharedUrlUtilsBundle' },
+  { entry: 'src/shared/messages.ts', outFile: 'shared/messages.js', name: 'FransyfoxSharedMessagesBundle' },
+  { entry: 'src/shared/logger.ts', outFile: 'shared/logger.js', name: 'FransyfoxSharedLoggerBundle' },
+  { entry: 'src/shared/event-store.ts', outFile: 'shared/event-store.js', name: 'FransyfoxSharedEventStoreBundle' },
+  { entry: 'src/shared/findings.ts', outFile: 'shared/findings.js', name: 'FransyfoxSharedFindingsBundle' },
+  { entry: 'src/main.ts', outFile: 'main.js', name: 'FransyfoxMainBundle' },
+  { entry: 'src/bridge.ts', outFile: 'bridge.js', name: 'FransyfoxBridgeBundle' },
+  { entry: 'src/background.ts', outFile: 'background.js', name: 'FransyfoxBackgroundBundle' },
+  { entry: 'src/panel-storage.ts', outFile: 'panel-storage.js', name: 'FransyfoxPanelStorageBundle' },
+  { entry: 'src/panel-ui-messages.ts', outFile: 'panel-ui-messages.js', name: 'FransyfoxPanelUIMessagesBundle' },
+  { entry: 'src/panel-ui-findings.ts', outFile: 'panel-ui-findings.js', name: 'FransyfoxPanelUIFindingsBundle' },
+  { entry: 'src/panel-ui-map.ts', outFile: 'panel-ui-map.js', name: 'FransyfoxPanelUIMapBundle' },
+  { entry: 'src/panel-ui-timeline.ts', outFile: 'panel-ui-timeline.js', name: 'FransyfoxPanelUITimelineBundle' },
+  { entry: 'src/panel-ui.ts', outFile: 'panel-ui.js', name: 'FransyfoxPanelUIBundle' },
+  { entry: 'src/panel-modals.ts', outFile: 'panel-modals.js', name: 'FransyfoxPanelModalsBundle' },
+  { entry: 'src/panel-main.ts', outFile: 'panel-main.js', name: 'FransyfoxPanelMainBundle' },
+  { entry: 'src/devtools.ts', outFile: 'devtools.js', name: 'FransyfoxDevtoolsBundle' }
 ];
 
 async function ensureDirFor(filePath) {
@@ -116,7 +116,7 @@ async function buildFirefoxOutput() {
   );
   await assertFileExists(path.join(DIST_FIREFOX, 'manifest.json'));
 
-  const firefoxReadmeText = `Fransceiver Firefox build output\nBuilt: ${new Date().toISOString()}\nLoad this folder as a temporary add-on via about:debugging, or check the release artifacts for a signed package.\n`;
+  const firefoxReadmeText = `Fransyfox Firefox build output\nBuilt: ${new Date().toISOString()}\nLoad this folder as a temporary add-on via about:debugging, or check the release artifacts for a signed package.\n`;
   await writeFile(path.join(DIST_FIREFOX, 'README.txt'), firefoxReadmeText);
 }
 
@@ -155,7 +155,7 @@ async function run() {
   await writeFile(markerPath, JSON.stringify(marker, null, 2) + '\n', 'utf8');
 
   const readmePath = path.join(DIST_CHROME, 'README.txt');
-  const readmeText = `Fransceiver build output\nBuilt: ${builtAt}\nLoad this folder as unpacked extension.\n`;
+  const readmeText = `Fransyfox build output\nBuilt: ${builtAt}\nLoad this folder as unpacked extension.\n`;
   await writeFile(readmePath, readmeText, 'utf8');
 }
 

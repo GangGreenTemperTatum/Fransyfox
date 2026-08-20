@@ -2,7 +2,7 @@ import type { ListenerRecord, MessageEventRecord } from './types/listener';
 import type { MatchReplaceRule } from './types/settings';
 
 declare global {
-  var FransceiverConstants: {
+  var FransyfoxConstants: {
     STORAGE_KEYS: {
       DEDUPE_ENABLED: string;
       EXTENSION_ACTIVE: string;
@@ -31,12 +31,12 @@ declare global {
     EXTENSION_BLACKLIST: string[];
   };
 
-  var FransceiverUrlUtils: {
+  var FransyfoxUrlUtils: {
     cleanUrl: (url: string) => string;
     extractJsUrlFromStack: (stack?: string, fullstack?: string[]) => string | null;
   };
 
-  var FransceiverMessages: {
+  var FransyfoxMessages: {
     PORT: {
       REQUEST_STATE: 'REQUEST_STATE';
       STATE: 'STATE';
@@ -52,7 +52,7 @@ declare global {
     };
   };
 
-  var FransceiverLogger: {
+  var FransyfoxLogger: {
     scoped: (scope?: string) => {
       debug: (...args: unknown[]) => void;
       info: (...args: unknown[]) => void;
@@ -62,7 +62,7 @@ declare global {
     setLevel: (levelName: string) => void;
   };
 
-  var FransceiverEventStore: {
+  var FransyfoxEventStore: {
     createEventStore: (options?: { maxEvents?: number }) => {
       add: (event: Record<string, unknown>) => Record<string, unknown> | null;
       all: () => Array<Record<string, unknown>>;
@@ -115,7 +115,7 @@ declare global {
     };
   };
 
-  var FransceiverFindings: {
+  var FransyfoxFindings: {
     version: number;
     evaluateListener: (listener: Record<string, unknown>) => {
       findings: Array<{ id: string; [key: string]: unknown }>;
@@ -270,8 +270,8 @@ declare global {
   var PanelMain: new (...args: unknown[]) => { init: () => Promise<void>; destroy: () => void };
 
   interface Window {
-    FransceiverMainLoaded?: boolean;
-    FransceiverBridgeLoaded?: boolean;
+    FransyfoxMainLoaded?: boolean;
+    FransyfoxBridgeLoaded?: boolean;
     expando?: string;
     events?: any;
     __lookupSetter__?: (prop: string) => ((value: any) => void) | undefined;

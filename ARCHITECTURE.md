@@ -1,8 +1,8 @@
-# Fransceiver Architecture Documentation
+# Fransyfox Architecture Documentation
 
 ## Overview
 
-Fransceiver is a Manifest V3 Chrome extension designed for security researchers and developers to track, analyze, and understand `postMessage` communication patterns on web pages. It intercepts `addEventListener` calls for message events, captures message traffic, and provides security analysis through configurable rules.
+Fransyfox is a Manifest V3 Chrome extension designed for security researchers and developers to track, analyze, and understand `postMessage` communication patterns on web pages. It intercepts `addEventListener` calls for message events, captures message traffic, and provides security analysis through configurable rules.
 
 ## Firefox
 
@@ -200,7 +200,7 @@ panel-main.js (Controller)
 
 **Port Communication**:
 ```javascript
-this.port = chrome.runtime.connect({ name: "Fransceiver Communication" });
+this.port = chrome.runtime.connect({ name: "Fransyfox Communication" });
 this.port.onMessage.addListener((msg) => this.handleBackgroundMessage(msg));
 // Automatic reconnection on disconnect
 this.port.onDisconnect.addListener(() => {

@@ -80,7 +80,7 @@
       return null;
     }
 
-    const databaseName = options?.databaseName || 'FransceiverEventStore';
+    const databaseName = options?.databaseName || 'FransyfoxEventStore';
     const storeName = options?.storeName || 'snapshots';
     const snapshotKey = options?.snapshotKey || 'messages';
     let dbPromise: Promise<IDBDatabase> | null = null;
@@ -97,7 +97,7 @@
           }
         };
         request.onerror = () => {
-          reject(request.error || new Error('Failed to open Fransceiver event store'));
+          reject(request.error || new Error('Failed to open Fransyfox event store'));
         };
         request.onsuccess = () => {
           resolve(request.result);
@@ -342,7 +342,7 @@
       // snapshots still run. Await the original operation so explicit callers
       // can observe whether their own flush succeeded.
       savePromise = operation.catch((error: unknown) => {
-        console.warn('Fransceiver: Failed to persist message event store:', error);
+        console.warn('Fransyfox: Failed to persist message event store:', error);
       });
       await operation;
     }
@@ -366,7 +366,7 @@
             hydrated = events.length > 0;
           }
         } catch (error) {
-          console.warn('Fransceiver: Failed to hydrate message event store:', error);
+          console.warn('Fransyfox: Failed to hydrate message event store:', error);
         } finally {
           loaded = true;
         }
@@ -519,16 +519,16 @@
     };
   }
 
-  type FransceiverEventStoreType = {
+  type FransyfoxEventStoreType = {
     createEventStore: typeof createEventStore;
     createPersistentEventStore: typeof createPersistentEventStore;
   };
 
   const globalObj = globalThis as typeof globalThis & {
-    FransceiverEventStore?: Partial<FransceiverEventStoreType>;
+    FransyfoxEventStore?: Partial<FransyfoxEventStoreType>;
   };
 
-  globalObj.FransceiverEventStore = Object.assign(globalObj.FransceiverEventStore || {}, {
+  globalObj.FransyfoxEventStore = Object.assign(globalObj.FransyfoxEventStore || {}, {
     createEventStore,
     createPersistentEventStore
   });

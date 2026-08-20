@@ -383,7 +383,7 @@
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         errors.push({ ruleId: rule.id, message });
-        console.warn(`[Fransceiver] Rule "${rule.id}" threw:`, message);
+        console.warn(`[Fransyfox] Rule "${rule.id}" threw:`, message);
       }
       const normalized = normalizeFinding(rule, result);
       if (normalized.length) {
@@ -401,7 +401,7 @@
     return RULES.slice();
   }
 
-  type FransceiverFindingsType = {
+  type FransyfoxFindingsType = {
     rules: RuleDefinition[];
     version: number;
     getRuleById: typeof getRuleById;
@@ -410,10 +410,10 @@
   };
 
   const globalObj = globalThis as typeof globalThis & {
-    FransceiverFindings?: Partial<FransceiverFindingsType>;
+    FransyfoxFindings?: Partial<FransyfoxFindingsType>;
   };
 
-  globalObj.FransceiverFindings = Object.assign(globalObj.FransceiverFindings || {}, {
+  globalObj.FransyfoxFindings = Object.assign(globalObj.FransyfoxFindings || {}, {
     rules: RULES,
     version: RULESET_VERSION,
     getRuleById,

@@ -15,15 +15,15 @@
     FRAME_TREE: 'FRAME_TREE'
   } as const;
 
-  type FransceiverMessagesType = {
+  type FransyfoxMessagesType = {
     PORT: typeof PORT;
   };
 
   const globalObj = globalThis as typeof globalThis & {
-    FransceiverMessages?: Partial<FransceiverMessagesType>;
+    FransyfoxMessages?: Partial<FransyfoxMessagesType>;
   };
 
-  globalObj.FransceiverMessages = Object.assign(globalObj.FransceiverMessages || {}, {
+  globalObj.FransyfoxMessages = Object.assign(globalObj.FransyfoxMessages || {}, {
     PORT
   });
 })();

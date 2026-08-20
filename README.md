@@ -1,4 +1,4 @@
-# Fransceiver
+# Fransyfox
 
 <div align="center">
 
@@ -6,19 +6,20 @@
 
 *KISS tooling for bug bounty and client-side security research — one panel, two browsers.*
 
-[![GitHub release](https://img.shields.io/github/v/release/GangGreenTemperTatum/Fransceiver)](https://github.com/GangGreenTemperTatum/Fransceiver/releases)
-[![CI](https://img.shields.io/github/actions/workflow/status/GangGreenTemperTatum/Fransceiver/ci.yml?branch=main&label=CI)](https://github.com/GangGreenTemperTatum/Fransceiver/actions)
-[![E2E](https://img.shields.io/github/actions/workflow/status/GangGreenTemperTatum/Fransceiver/ci.yml?branch=main&label=Firefox%20e2e)](https://github.com/GangGreenTemperTatum/Fransceiver/actions)
-[![Chrome](https://img.shields.io/badge/Chrome-MV3-blue)](https://github.com/GangGreenTemperTatum/Fransceiver#install)
-[![Firefox](https://img.shields.io/badge/Firefox-128%2B-orange)](https://github.com/GangGreenTemperTatum/Fransceiver#install)
+[![GitHub release](https://img.shields.io/github/v/release/GangGreenTemperTatum/Fransyfox)](https://github.com/GangGreenTemperTatum/Fransyfox/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/GangGreenTemperTatum/Fransyfox/ci.yml?branch=main&label=CI)](https://github.com/GangGreenTemperTatum/Fransyfox/actions)
+[![E2E](https://img.shields.io/github/actions/workflow/status/GangGreenTemperTatum/Fransyfox/ci.yml?branch=main&label=Firefox%20e2e)](https://github.com/GangGreenTemperTatum/Fransyfox/actions)
+[![Chrome](https://img.shields.io/badge/Chrome-MV3-blue)](https://github.com/GangGreenTemperTatum/Fransyfox#install)
+[![Firefox](https://img.shields.io/badge/Firefox-128%2B-orange)](https://github.com/GangGreenTemperTatum/Fransyfox#install)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/GangGreenTemperTatum/Fransceiver?style=social)](https://github.com/GangGreenTemperTatum/Fransceiver/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/GangGreenTemperTatum/Fransyfox?style=social)](https://github.com/GangGreenTemperTatum/Fransyfox/stargazers)
 
 </div>
 
-Fransceiver (pronounced *frans-SEE-ver*) is a browser extension that watches
-`postMessage` traffic on every web page you visit. Like a radio transceiver,
-it picks up the signals others send — and lets you transmit your own.
+Fransyfox (pronounced *fran-SEE-fox*) is a browser extension that watches
+`postMessage` traffic on every web page you visit. Like a fox with its ear
+to the wire, it hears every signal a page sends — and it knows how to howl
+back.
 
 It detects `postMessage` listeners registered by pages across all frames and
 origins, shows their source code and stack traces, captures cross-frame
@@ -35,37 +36,38 @@ Available for **Chrome/Chromium** (MV3 side panel) and **Firefox 128+**
 
 <table>
 <tr>
-<td align="center"><img src="assets/screenshots/fransceiver-1.png" alt="Fransceiver" width="420"/><br><b>Fransceiver</b></td>
-<td align="center"><img src="assets/screenshots/fransceiver-2.png" alt="Fransceiver" width="420"/><br><b>Fransceiver</b></td>
+<td align="center"><img src="assets/screenshots/fransyfox-1.png" alt="Fransyfox" width="420"/><br><b>Fransyfox</b></td>
+<td align="center"><img src="assets/screenshots/fransyfox-2.png" alt="Fransyfox" width="420"/><br><b>Fransyfox</b></td>
 </tr>
 <tr>
-<td align="center"><img src="assets/screenshots/fransceiver-3.png" alt="Fransceiver" width="420"/><br><b>Fransceiver</b></td>
-<td align="center"><img src="assets/screenshots/fransceiver-4.png" alt="Fransceiver" width="420"/><br><b>Fransceiver</b></td>
+<td align="center"><img src="assets/screenshots/fransyfox-3.png" alt="Fransyfox" width="420"/><br><b>Fransyfox</b></td>
+<td align="center"><img src="assets/screenshots/fransyfox-4.png" alt="Fransyfox" width="420"/><br><b>Fransyfox</b></td>
 </tr>
 </table>
 
 ## Why the name
 
-Fransceiver is named after **Frans Rosén** ([@fransrosen](https://twitter.com/fransrosen)) — the legendary security researcher who built the original
+Fransyfox is named after **Frans Rosén** ([@fransrosen](https://twitter.com/fransrosen)) — the legendary security researcher who built the original
 [postMessage-tracker](https://github.com/fransr/postMessage-tracker).
 
-It's *Frans* + *transceiver*: a radio operator's device that listens to
-signals on the wire and keys up to transmit its own. That is exactly what
-this extension does — receives every `postMessage` a page sends, and
-transmits the ones you compose. Every time this tool helps you find a bug
-in somebody's cross-frame messaging, it's standing on Frans's shoulders.
+It's *Fransy* — the community's affectionate name for Frans, passed down
+through FancyTracker and FransyTracker — plus *Fox*, the animal that prowls
+silently, listens to everything, and survives on its wits (and, of course,
+the fox in the Firefox logo this extension happily ships for). Every time
+this tool helps you find a bug in somebody's cross-frame messaging, it's
+standing on Frans's shoulders.
 
 ## Credits — hall of fame
 
-Fransceiver is a modern, cross-browser spiritual successor. Everything here
+Fransyfox is a modern, cross-browser spiritual successor. Everything here
 traces back to the work of three people. Go star and thank them:
 
 | Project | Author | Role |
 |---------|--------|------|
 | [postMessage-tracker](https://github.com/fransr/postMessage-tracker) | [Frans Rosén](https://twitter.com/fransrosen) | **The original.** The one that started everything. Before it, mapping a site's `postMessage` listeners meant reading minified bundles with a crystal ball. Frans handed the research community a tool that made cross-frame attacks *visible*, and it changed how a generation of appsec people approach client-side bugs. |
-| [FancyTracker](https://github.com/Zeetaz/FancyTracker) | Erik Zettergren | Extended fork of the original with the rich side-panel UI that Fransceiver's interface descends from. |
-| [FransyTracker](https://gitlab.com/joaxcar/fransytracker) | Johan Carlsson | Manifest V3 modernization, findings engine, message timeline, and the battle-tested service-worker persistence model. Fransceiver's codebase is derived from this — it was FransyTracker that ran in a side panel for years while browser politics tore the original down and rebuilt it. |
-| Fransceiver | You, reading this | This repo: renamed, rebuilt for Firefox 128+ *and* Chrome, re-verified end-to-end so the lineage lives on. |
+| [FancyTracker](https://github.com/Zeetaz/FancyTracker) | Erik Zettergren | Extended fork of the original with the rich side-panel UI that Fransyfox's interface descends from. |
+| [FransyTracker](https://gitlab.com/joaxcar/fransytracker) | Johan Carlsson | Manifest V3 modernization, findings engine, message timeline, and the battle-tested service-worker persistence model. Fransyfox's codebase is derived from this — it was FransyTracker that ran in a side panel for years while browser politics tore the original down and rebuilt it. |
+| Fransyfox | You, reading this | This repo: renamed, rebuilt for Firefox 128+ *and* Chrome, re-verified end-to-end so the lineage lives on. |
 
 All upstream work is MIT-licensed — see [LICENSE](LICENSE).
 
@@ -99,8 +101,8 @@ All upstream work is MIT-licensed — see [LICENSE](LICENSE).
 
 ### Release artifact (no build needed)
 
-Grab `fransceiver-v<tag>-chrome.zip` / `fransceiver-v<tag>-firefox.zip` from
-[Releases](https://github.com/GangGreenTemperTatum/Fransceiver/releases):
+Grab `fransyfox-v<tag>-chrome.zip` / `fransyfox-v<tag>-firefox.zip` from
+[Releases](https://github.com/GangGreenTemperTatum/Fransyfox/releases):
 
 - **Chrome**: unzip, then `chrome://extensions` → **Developer mode** →
   **Load unpacked** → the extracted folder. Click the toolbar icon to open
@@ -122,7 +124,7 @@ the same way as above. Quality gates: `npm run typecheck`, `npm run lint`,
 
 Permanent Firefox install requires an AMO-signed package (add-on ID and
 homepage already point at this repo:
-`fransceiver@GangGreenTemperTatum.github.io`).
+`fransyfox@GangGreenTemperTatum.github.io`).
 
 ### Firefox vs Chrome
 

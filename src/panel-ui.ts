@@ -1,8 +1,8 @@
 export {};
 import type { Finding, ListenerRecord } from './types/listener';
-// UI utilities and DOM manipulation for Fransceiver - Optimized Version with Local Highlight.js
+// UI utilities and DOM manipulation for Fransyfox - Optimized Version with Local Highlight.js
 // Uses composition with PanelUIMessages and PanelUIFindings for tab-specific rendering
-const uiLog = FransceiverLogger.scoped('panel-ui');
+const uiLog = FransyfoxLogger.scoped('panel-ui');
 
 type HighlightRules = Record<string, string[]>;
 type ListenerFocusHandler = (listener: ListenerRecord) => void;
@@ -132,14 +132,14 @@ class PanelUI {
         if (Array.isArray(listener.findings)) {
             return listener.findings as FindingWithDetails[];
         }
-        const hasRules = globalThis.FransceiverFindings && FransceiverFindings.evaluateListener;
-        const rulesVersion = globalThis.FransceiverFindings ? FransceiverFindings.version : null;
+        const hasRules = globalThis.FransyfoxFindings && FransyfoxFindings.evaluateListener;
+        const rulesVersion = globalThis.FransyfoxFindings ? FransyfoxFindings.version : null;
         if (listener.findingsVersion && rulesVersion && listener.findingsVersion === rulesVersion) {
             return [];
         }
         if (!hasRules)
             return [];
-        const result = FransceiverFindings.evaluateListener(listener) || { findings: [], errors: [] };
+        const result = FransyfoxFindings.evaluateListener(listener) || { findings: [], errors: [] };
         const findings = result.findings || [];
         listener.findings = findings;
         if (rulesVersion) {
@@ -149,7 +149,7 @@ class PanelUI {
     }
     initHighlightJs() {
         if (typeof hljs !== 'undefined') {
-            uiLog.info('Fransceiver: Local highlight.js is available');
+            uiLog.info('Fransyfox: Local highlight.js is available');
             this.highlightJsAvailable = true;
             hljs.configure({
                 languages: ['javascript', 'js'],
@@ -157,7 +157,7 @@ class PanelUI {
             });
         }
         else {
-            uiLog.error('Fransceiver: Local highlight.js not found!');
+            uiLog.error('Fransyfox: Local highlight.js not found!');
             this.highlightJsAvailable = false;
         }
     }
@@ -172,7 +172,7 @@ class PanelUI {
             return true;
         }
         catch (error) {
-            uiLog.error('Fransceiver: Error applying syntax highlighting:', error);
+            uiLog.error('Fransyfox: Error applying syntax highlighting:', error);
             return false;
         }
     }
@@ -343,7 +343,7 @@ class PanelUI {
                 rules[currentColor].push(...terms);
             }
         }
-        uiLog.info('Fransceiver: Parsed highlight rules:', rules);
+        uiLog.info('Fransyfox: Parsed highlight rules:', rules);
         return rules;
     }
     applyHighlighting(text: string, rules: HighlightRules) {
@@ -410,8 +410,8 @@ class PanelUI {
                 const findingId = typeof finding === 'string' ? finding : (finding && finding.id);
                 if (!findingId)
                     return;
-                const rule = globalThis.FransceiverFindings && FransceiverFindings.getRuleById
-                    ? FransceiverFindings.getRuleById(findingId)
+                const rule = globalThis.FransyfoxFindings && FransyfoxFindings.getRuleById
+                    ? FransyfoxFindings.getRuleById(findingId)
                     : null;
                 entries.push({
                     finding: typeof finding === 'string' ? { id: findingId } : finding,
@@ -814,7 +814,7 @@ class PanelUI {
     applyAllHighlighting(codeBlock: HTMLElement, displayCode: string) {
         const hasCustomRules = this.storage.highlightRules && Object.keys(this.storage.highlightRules).length > 0;
         const hasSyntaxHighlighting = this.storage.syntaxHighlightEnabled && this.highlightJsAvailable;
-        uiLog.info('Fransceiver: Applying highlighting - Custom rules:', hasCustomRules, 'Syntax highlighting:', hasSyntaxHighlighting);
+        uiLog.info('Fransyfox: Applying highlighting - Custom rules:', hasCustomRules, 'Syntax highlighting:', hasSyntaxHighlighting);
         if (!hasCustomRules && !hasSyntaxHighlighting) {
             // No highlighting at all
             codeBlock.textContent = displayCode;
@@ -832,7 +832,7 @@ class PanelUI {
         }
         // Both custom and syntax highlighting - this is the tricky case
         // Strategy: Apply custom highlighting first with special markers, then syntax highlighting, then convert markers
-        uiLog.info('Fransceiver: Applying both custom and syntax highlighting');
+        uiLog.info('Fransyfox: Applying both custom and syntax highlighting');
         // Step 1: Apply custom highlighting with placeholders
         const customHighlighted = this.applyCustomHighlightingWithPlaceholders(displayCode, this.storage.highlightRules);
         // Step 2: Apply syntax highlighting (this will process the placeholders as regular text)
@@ -901,16 +901,16 @@ class PanelUI {
         // Highlight settings changed - cached elements no longer match
         this.highlightRulesVersion++;
         this.invalidateListenerElementCache();
-        uiLog.info('Fransceiver: Re-highlighting all code blocks, force rebuild syntax:', forceRebuildSyntax);
-        uiLog.info('Fransceiver: Current highlight rules:', this.storage.highlightRules);
-        uiLog.info('Fransceiver: Syntax highlighting enabled:', this.storage.syntaxHighlightEnabled);
+        uiLog.info('Fransyfox: Re-highlighting all code blocks, force rebuild syntax:', forceRebuildSyntax);
+        uiLog.info('Fransyfox: Current highlight rules:', this.storage.highlightRules);
+        uiLog.info('Fransyfox: Syntax highlighting enabled:', this.storage.syntaxHighlightEnabled);
         document.querySelectorAll('.code-block').forEach((codeBlock: Element, index: number) => {
             if (!(codeBlock instanceof HTMLElement)) {
                 return;
             }
             const originalText = codeBlock.getAttribute('data-original-text');
             if (originalText) {
-                uiLog.info(`Fransceiver: Re-highlighting code block ${index + 1}`);
+                uiLog.info(`Fransyfox: Re-highlighting code block ${index + 1}`);
                 const wasExpanded = !codeBlock.classList.contains('truncated');
                 let displayCode = originalText;
                 if (this.storage.prettifyEnabled) {
@@ -924,13 +924,13 @@ class PanelUI {
                     : displayCode;
                 if (forceRebuildSyntax) {
                     // Full rebuild needed (syntax highlighting settings changed)
-                    uiLog.info('Fransceiver: Full rebuild - clearing existing highlighting');
+                    uiLog.info('Fransyfox: Full rebuild - clearing existing highlighting');
                     codeBlock.className = codeBlock.className.replace(/hljs[^\s]*/g, '').trim();
                     this.applyAllHighlighting(codeBlock, highlightCode);
                 }
                 else {
                     // Only custom highlighting changed - preserve syntax highlighting
-                    uiLog.info('Fransceiver: Optimized rebuild - preserving syntax highlighting');
+                    uiLog.info('Fransyfox: Optimized rebuild - preserving syntax highlighting');
                     this.updateCustomHighlightingOnly(codeBlock, highlightCode);
                 }
                 // Apply font size and truncation
@@ -941,7 +941,7 @@ class PanelUI {
                 }
             }
         });
-        uiLog.info('Fransceiver: Re-highlighting complete');
+        uiLog.info('Fransyfox: Re-highlighting complete');
     }
     // NEW METHOD: Update only custom highlighting without affecting syntax highlighting
     updateCustomHighlightingOnly(codeBlock: HTMLElement, displayCode: string) {
@@ -951,19 +951,19 @@ class PanelUI {
         this.removeExistingCustomHighlights(codeBlock);
         if (!hasCustomRules) {
             // No custom rules, we're done (syntax highlighting is preserved)
-            uiLog.info('Fransceiver: No custom rules, keeping existing content');
+            uiLog.info('Fransyfox: No custom rules, keeping existing content');
             return;
         }
         if (hasSyntaxHighlighting && this.hasExistingSyntaxHighlighting(codeBlock)) {
             // Apply custom highlighting on top of existing syntax highlighting
-            uiLog.info('Fransceiver: Applying custom highlighting on existing syntax highlighting');
+            uiLog.info('Fransyfox: Applying custom highlighting on existing syntax highlighting');
             const currentHtml = codeBlock.innerHTML;
             const withCustomHighlighting = this.applyCustomHighlightingOnExistingHtml(currentHtml, this.storage.highlightRules);
             codeBlock.innerHTML = withCustomHighlighting;
         }
         else {
             // No existing syntax highlighting, apply custom highlighting on plain text
-            uiLog.info('Fransceiver: Applying custom highlighting on plain text');
+            uiLog.info('Fransyfox: Applying custom highlighting on plain text');
             codeBlock.innerHTML = this.applyHighlighting(displayCode, this.storage.highlightRules);
         }
     }
@@ -991,7 +991,7 @@ class PanelUI {
         if (!rules || Object.keys(rules).length === 0) {
             return htmlContent;
         }
-        uiLog.info('Fransceiver: Applying custom highlighting on existing HTML');
+        uiLog.info('Fransyfox: Applying custom highlighting on existing HTML');
         // Get the plain text to find matches
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlContent;
@@ -1018,7 +1018,7 @@ class PanelUI {
             const escapedTerm = this.escapeRegex(term);
             const plainTextRegex = new RegExp(`\\b${escapedTerm}\\b`, 'gi');
             if (plainTextRegex.test(plainText)) {
-                uiLog.info(`Fransceiver: Highlighting term "${term}" in existing HTML`);
+                uiLog.info(`Fransyfox: Highlighting term "${term}" in existing HTML`);
                 // Use a more sophisticated approach for existing HTML
                 result = this.wrapTermInExistingHtml(result, term, color);
             }
@@ -1150,7 +1150,7 @@ class PanelUI {
             });
         }
         catch (error) {
-            uiLog.error('Fransceiver: Error building listener list:', error);
+            uiLog.error('Fransyfox: Error building listener list:', error);
         }
     }
     buildFindingsList(listeners: ListenerRecord[], excludeBlocked = false): FindingEntry[] {
@@ -1173,8 +1173,8 @@ class PanelUI {
                 if (!findingId) {
                     continue;
                 }
-                const rule = globalThis.FransceiverFindings && FransceiverFindings.getRuleById
-                    ? FransceiverFindings.getRuleById(findingId)
+                const rule = globalThis.FransyfoxFindings && FransyfoxFindings.getRuleById
+                    ? FransyfoxFindings.getRuleById(findingId)
                     : null;
                 results.push({
                     listener,

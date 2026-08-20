@@ -3,8 +3,8 @@ import { createTimedEventBatcher } from './shared/event-batcher';
 import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
 
 // Bridge Content Script - Handles communication between MAIN world and background
-if (typeof window.FransceiverBridgeLoaded === 'undefined') {
-  window.FransceiverBridgeLoaded = true;
+if (typeof window.FransyfoxBridgeLoaded === 'undefined') {
+  window.FransyfoxBridgeLoaded = true;
 
   (function () {
     'use strict';
@@ -26,15 +26,15 @@ if (typeof window.FransceiverBridgeLoaded === 'undefined') {
       'event-tracker-page-hook',
       'event-tracker-content-hook',
       'bitwarden-webauthn',
-      'FRANSCEIVER_DATA',
-      'Fransceiver:',
+      'FRANSYFOX_DATA',
+      'Fransyfox:',
       'POSTMESSAGE_TRACKER_DATA',
       'FransyTracker:',
       '__postmessagetrackername__'
     ];
     const constants =
-      typeof FransceiverConstants !== 'undefined' && FransceiverConstants
-        ? FransceiverConstants
+      typeof FransyfoxConstants !== 'undefined' && FransyfoxConstants
+        ? FransyfoxConstants
         : null;
 
     const EXTENSION_BLACKLIST = Array.from(
@@ -45,13 +45,13 @@ if (typeof window.FransceiverBridgeLoaded === 'undefined') {
     const FLOOD_PROTECTION_KEY =
       (STORAGE_KEYS as Record<string, string>).FLOOD_PROTECTION_ENABLED || 'floodProtectionEnabled';
 
-    const BLACKLIST_TYPE = 'FRANSCEIVER_BLACKLIST';
-    const RULES_TYPE = 'FRANSCEIVER_RULES';
-    const RULES_REQUEST_TYPE = 'FRANSCEIVER_RULES_REQUEST';
-    const SETTINGS_TYPE = 'FRANSCEIVER_SETTINGS';
-    const SETTINGS_REQUEST_TYPE = 'FRANSCEIVER_SETTINGS_REQUEST';
-    const ACTIVE_TYPE = 'FRANSCEIVER_ACTIVE';
-    const ACTIVE_REQUEST_TYPE = 'FRANSCEIVER_ACTIVE_REQUEST';
+    const BLACKLIST_TYPE = 'FRANSYFOX_BLACKLIST';
+    const RULES_TYPE = 'FRANSYFOX_RULES';
+    const RULES_REQUEST_TYPE = 'FRANSYFOX_RULES_REQUEST';
+    const SETTINGS_TYPE = 'FRANSYFOX_SETTINGS';
+    const SETTINGS_REQUEST_TYPE = 'FRANSYFOX_SETTINGS_REQUEST';
+    const ACTIVE_TYPE = 'FRANSYFOX_ACTIVE';
+    const ACTIVE_REQUEST_TYPE = 'FRANSYFOX_ACTIVE_REQUEST';
 
     let bridgeActive = true;
     let trackingListenersAttached = false;
@@ -125,13 +125,13 @@ if (typeof window.FransceiverBridgeLoaded === 'undefined') {
         chrome.runtime.sendMessage(message, () => {
           if (chrome.runtime.lastError) {
             console.error(
-              'Fransceiver: Bridge runtime error:',
+              'Fransyfox: Bridge runtime error:',
               chrome.runtime.lastError.message
             );
           }
         });
       } catch (error) {
-        console.error('Fransceiver: Bridge exception:', error);
+        console.error('Fransyfox: Bridge exception:', error);
       }
     }
 
@@ -161,7 +161,7 @@ if (typeof window.FransceiverBridgeLoaded === 'undefined') {
             const error = chrome.runtime.lastError;
             if (error) {
               console.error(
-                'Fransceiver: Listener send failed:',
+                'Fransyfox: Listener send failed:',
                 error.message
               );
               scheduleRetry();
@@ -170,7 +170,7 @@ if (typeof window.FransceiverBridgeLoaded === 'undefined') {
             }
           });
         } catch (error) {
-          console.error('Fransceiver: Listener send exception:', error);
+          console.error('Fransyfox: Listener send exception:', error);
           scheduleRetry();
         }
 
@@ -278,12 +278,12 @@ if (typeof window.FransceiverBridgeLoaded === 'undefined') {
       const message = getTrackerMessage(event);
       if (!message) return;
 
-      if (message.type === 'FRANSCEIVER_DATA') {
+      if (message.type === 'FRANSYFOX_DATA') {
         sendListenerDataReliably(message.detail);
         return;
       }
 
-      if (message.type === 'FRANSCEIVER_EVENT') {
+      if (message.type === 'FRANSYFOX_EVENT') {
         enqueueTrackedEvent(message.detail);
         return;
       }
@@ -298,7 +298,7 @@ if (typeof window.FransceiverBridgeLoaded === 'undefined') {
         return;
       }
 
-      if (message.type === 'FRANSCEIVER_BLACKLIST_REQUEST') {
+      if (message.type === 'FRANSYFOX_BLACKLIST_REQUEST') {
         forwardBlacklist();
       }
     }
@@ -381,7 +381,7 @@ if (typeof window.FransceiverBridgeLoaded === 'undefined') {
 
       // Composer: deliver a panel-crafted postMessage in this frame's MAIN world.
       if (msg.action === 'composeSend') {
-        sendToMain('FRANSCEIVER_SEND', msg.detail);
+        sendToMain('FRANSYFOX_SEND', msg.detail);
       }
     });
 
@@ -404,6 +404,6 @@ if (typeof window.FransceiverBridgeLoaded === 'undefined') {
       }
     });
 
-    console.log('Fransceiver: Bridge initialized');
+    console.log('Fransyfox: Bridge initialized');
   })();
 }

@@ -2,7 +2,7 @@ import type { FrameNode, MessageEventRecord, FrameSeverity } from './types/liste
 
 export {};
 
-// Frame & Message Map rendering for the Fransceiver panel.
+// Frame & Message Map rendering for the Fransyfox panel.
 //
 // Nodes are frames (identity = real Chrome frameId), laid out as a hierarchy
 // from parentFrameId. Edges are aggregated message flows. Message events carry
@@ -10,7 +10,7 @@ export {};
 // the hops->frameId mapping is derived from traffic and used to resolve edge
 // endpoints. Unresolvable sources (cross-window / opaque) collapse into a
 // single "external" node so they are still visible.
-const mapLog = FransceiverLogger.scoped('panel-ui-map');
+const mapLog = FransyfoxLogger.scoped('panel-ui-map');
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -153,7 +153,7 @@ class PanelUIMap {
   render(frames: FrameNode[], messages: MessageEventRecord[], options?: RenderOptions): void {
     const container = this.ensureContainer();
     if (!container) {
-      mapLog.warn('Fransceiver: Map canvas element not found');
+      mapLog.warn('Fransyfox: Map canvas element not found');
       return;
     }
     container.textContent = '';

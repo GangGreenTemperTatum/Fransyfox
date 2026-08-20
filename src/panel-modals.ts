@@ -1,9 +1,9 @@
 import { MAX_USER_REGEX_RULES, compileSafeRegex } from './shared/safe-regex';
 
 export {};
-// Modal management for Fransceiver panel
+// Modal management for Fransyfox panel
 // Handles: Regex editor, Highlight editor, Settings modal, Export/Import
-const modalLog = FransceiverLogger.scoped('panel-modals');
+const modalLog = FransyfoxLogger.scoped('panel-modals');
 
 type HighlightRules = Record<string, string[]>;
 type RefreshHandler = (isManual: boolean) => void | Promise<void>;

@@ -5,8 +5,8 @@ import './event-store';
 describe('shared/event-store', () => {
   test('stores events in a bounded buffer', () => {
     const storeFactory = (globalThis as {
-      FransceiverEventStore?: { createEventStore: (options?: { maxEvents?: number }) => { add: (event: { ts?: number }) => unknown; all: () => unknown[] } };
-    }).FransceiverEventStore;
+      FransyfoxEventStore?: { createEventStore: (options?: { maxEvents?: number }) => { add: (event: { ts?: number }) => unknown; all: () => unknown[] } };
+    }).FransyfoxEventStore;
 
     const store = storeFactory?.createEventStore({ maxEvents: 2 });
     store?.add({ ts: 1 });
@@ -27,7 +27,7 @@ describe('shared/event-store', () => {
       }
     };
     const storeFactory = (globalThis as {
-      FransceiverEventStore?: {
+      FransyfoxEventStore?: {
         createPersistentEventStore: (options?: {
           maxEvents?: number;
           adapter?: typeof adapter;
@@ -40,7 +40,7 @@ describe('shared/event-store', () => {
           flushNow: () => Promise<void>;
         };
       };
-    }).FransceiverEventStore;
+    }).FransyfoxEventStore;
 
     const firstStore = storeFactory?.createPersistentEventStore({
       maxEvents: 5,
@@ -78,7 +78,7 @@ describe('shared/event-store', () => {
       }
     };
     const storeFactory = (globalThis as {
-      FransceiverEventStore?: {
+      FransyfoxEventStore?: {
         createPersistentEventStore: (options?: {
           maxEvents?: number;
           adapter?: typeof adapter;
@@ -91,7 +91,7 @@ describe('shared/event-store', () => {
           getNavigationId: (tabId: number) => number;
         };
       };
-    }).FransceiverEventStore;
+    }).FransyfoxEventStore;
 
     const store = storeFactory?.createPersistentEventStore({ maxEvents: 2, adapter, saveDelayMs: 0 });
     await store?.init();
@@ -113,7 +113,7 @@ describe('shared/event-store', () => {
       save: () => Promise.resolve()
     };
     const storeFactory = (globalThis as {
-      FransceiverEventStore?: {
+      FransyfoxEventStore?: {
         createPersistentEventStore: (options?: {
           maxEvents?: number;
           adapter?: typeof adapter;
@@ -130,7 +130,7 @@ describe('shared/event-store', () => {
           size: () => number;
         };
       };
-    }).FransceiverEventStore;
+    }).FransyfoxEventStore;
 
     const store = storeFactory?.createPersistentEventStore({ maxEvents: 3, adapter, saveDelayMs: 0 });
     await store?.init();
@@ -163,7 +163,7 @@ describe('shared/event-store', () => {
       save: () => Promise.resolve()
     };
     const storeFactory = (globalThis as {
-      FransceiverEventStore?: {
+      FransyfoxEventStore?: {
         createPersistentEventStore: (options?: {
           maxEvents?: number;
           maxDataChars?: number;
@@ -179,7 +179,7 @@ describe('shared/event-store', () => {
           getMaxDataChars: () => number;
         };
       };
-    }).FransceiverEventStore;
+    }).FransyfoxEventStore;
 
     const store = storeFactory?.createPersistentEventStore({
       maxEvents: 100,
@@ -217,7 +217,7 @@ describe('shared/event-store', () => {
       }
     };
     const storeFactory = (globalThis as {
-      FransceiverEventStore?: {
+      FransyfoxEventStore?: {
         createPersistentEventStore: (options: {
           adapter: typeof adapter;
           saveDelayMs: number;
@@ -227,7 +227,7 @@ describe('shared/event-store', () => {
           flushNow: () => Promise<void>;
         };
       };
-    }).FransceiverEventStore;
+    }).FransyfoxEventStore;
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const store = storeFactory?.createPersistentEventStore({ adapter, saveDelayMs: 1000 });
 
@@ -262,7 +262,7 @@ describe('shared/event-store', () => {
         }
       };
       const storeFactory = (globalThis as {
-        FransceiverEventStore?: {
+        FransyfoxEventStore?: {
           createPersistentEventStore: (options?: {
             maxEvents?: number;
             adapter?: typeof adapter;
@@ -272,7 +272,7 @@ describe('shared/event-store', () => {
             add: (event: { ts?: number }) => Promise<unknown>;
           };
         };
-      }).FransceiverEventStore;
+      }).FransyfoxEventStore;
 
       const store = storeFactory?.createPersistentEventStore({ maxEvents: 100, adapter, saveDelayMs: 1000 });
       await store?.init();

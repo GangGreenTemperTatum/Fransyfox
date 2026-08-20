@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Fransceiver",
+  "name": "Fransyfox",
   "description": "postMessage transceiver: intercept, track, and analyze cross-frame postMessage listeners and messages",
-  "version": "0.1.0",
-  "author": "Fransceiver contributors",
-  "homepage_url": "https://github.com/GangGreenTemperTatum/Fransceiver",
+  "version": "0.2.0",
+  "author": "Fransyfox contributors",
+  "homepage_url": "https://github.com/GangGreenTemperTatum/Fransyfox",
   "browser_specific_settings": {
     "gecko": {
-      "id": "fransceiver@GangGreenTemperTatum.github.io",
+      "id": "fransyfox@GangGreenTemperTatum.github.io",
       "strict_min_version": "128.0"
     },
     "gecko_android": {
@@ -25,11 +25,11 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Fransceiver - PostMessage Tracker",
+    "default_title": "Fransyfox - PostMessage Tracker",
     "default_area": "navbar"
   },
   "sidebar_action": {
-    "default_title": "Fransceiver",
+    "default_title": "Fransyfox",
     "default_panel": "panel.html"
   },
   "devtools_page": "devtools.html",

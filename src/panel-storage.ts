@@ -12,10 +12,10 @@ import { MAX_USER_REGEX_RULES, compileSafeRegex, limitRegexInput } from './share
 import type { ListenerRecord } from './types/listener';
 import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
 
-// Storage and blocklist management for Fransceiver
-const { STORAGE_KEYS } = FransceiverConstants;
-const { cleanUrl, extractJsUrlFromStack } = FransceiverUrlUtils;
-const storageLog = FransceiverLogger.scoped('panel-storage');
+// Storage and blocklist management for Fransyfox
+const { STORAGE_KEYS } = FransyfoxConstants;
+const { cleanUrl, extractJsUrlFromStack } = FransyfoxUrlUtils;
+const storageLog = FransyfoxLogger.scoped('panel-storage');
 
 type HighlightRules = Record<string, string[]>;
 type BlockType = 'listener' | 'url' | 'regex';
@@ -127,7 +127,7 @@ class PanelStorage {
       chrome.storage.local.get(['syntaxHighlightEnabled'], (result: Record<string, unknown>) => {
         this.syntaxHighlightEnabled = normalizeBoolean(result.syntaxHighlightEnabled, true);
         storageLog.info(
-          'Fransceiver: Loaded syntax highlight setting:',
+          'Fransyfox: Loaded syntax highlight setting:',
           this.syntaxHighlightEnabled
         );
         resolve();
@@ -140,7 +140,7 @@ class PanelStorage {
     return new Promise((resolve) => {
       this.syntaxHighlightEnabled = enabled;
       chrome.storage.local.set({ syntaxHighlightEnabled: enabled }, () => {
-        storageLog.info('Fransceiver: Saved syntax highlight setting:', enabled);
+        storageLog.info('Fransyfox: Saved syntax highlight setting:', enabled);
         resolve();
       });
     });
@@ -321,7 +321,7 @@ class PanelStorage {
       chrome.storage.local.get([STORAGE_KEYS.BLOCKED_REGEX], (result: Record<string, unknown>) => {
         this.blockedRegex = normalizeStringArray(result[STORAGE_KEYS.BLOCKED_REGEX]).slice(0, MAX_USER_REGEX_RULES);
         this.compileRegexPatterns();
-        storageLog.info('Fransceiver: Loaded regex patterns:', this.blockedRegex.length);
+        storageLog.info('Fransyfox: Loaded regex patterns:', this.blockedRegex.length);
         resolve();
       });
     });
@@ -401,10 +401,10 @@ class PanelStorage {
           regex: compiled.regex
         });
       } else {
-        storageLog.warn('Fransceiver: Rejected unsafe or invalid regex pattern:', pattern, compiled.error);
+        storageLog.warn('Fransyfox: Rejected unsafe or invalid regex pattern:', pattern, compiled.error);
       }
     }
-    storageLog.info('Fransceiver: Compiled regex patterns:', this.compiledRegex.length);
+    storageLog.info('Fransyfox: Compiled regex patterns:', this.compiledRegex.length);
   }
 
   // Save regex patterns to storage
@@ -437,7 +437,7 @@ class PanelStorage {
         }
       } catch (error) {
         storageLog.warn(
-          'Fransceiver: Error testing regex pattern:',
+          'Fransyfox: Error testing regex pattern:',
           compiled.pattern,
           error
         );
@@ -480,7 +480,7 @@ class PanelStorage {
     return new Promise((resolve) => {
       chrome.storage.local.get([STORAGE_KEYS.DEDUPE_ENABLED], (result: Record<string, unknown>) => {
         this.dedupeEnabled = normalizeBoolean(result[STORAGE_KEYS.DEDUPE_ENABLED], true);
-        storageLog.info('Fransceiver: Loaded dedupe setting:', this.dedupeEnabled);
+        storageLog.info('Fransyfox: Loaded dedupe setting:', this.dedupeEnabled);
         resolve();
       });
     });
@@ -535,7 +535,7 @@ class PanelStorage {
     return new Promise((resolve) => {
       this.dedupeEnabled = enabled;
       chrome.storage.local.set({ [STORAGE_KEYS.DEDUPE_ENABLED]: enabled }, () => {
-        storageLog.info('Fransceiver: Saved dedupe setting:', enabled);
+        storageLog.info('Fransyfox: Saved dedupe setting:', enabled);
 
         // Also notify background script
         chrome.runtime.sendMessage(
@@ -546,11 +546,11 @@ class PanelStorage {
           () => {
             if (chrome.runtime.lastError) {
               storageLog.error(
-                'Fransceiver: Error updating dedupe setting:',
+                'Fransyfox: Error updating dedupe setting:',
                 chrome.runtime.lastError
               );
             } else {
-              storageLog.info('Fransceiver: Background script updated dedupe setting');
+              storageLog.info('Fransyfox: Background script updated dedupe setting');
             }
             resolve();
           }
@@ -690,7 +690,7 @@ class PanelStorage {
       exportDate: new Date().toISOString(),
       version: '1.0'
     };
-    this.exportData(data, 'fransceiver-blocked-urls.json');
+    this.exportData(data, 'fransyfox-blocked-urls.json');
   }
 
   exportBlockedListeners(): void {
@@ -699,7 +699,7 @@ class PanelStorage {
       exportDate: new Date().toISOString(),
       version: '1.0'
     };
-    this.exportData(data, 'fransceiver-blocked-listeners.json');
+    this.exportData(data, 'fransyfox-blocked-listeners.json');
   }
 
   // Export regex patterns
@@ -709,7 +709,7 @@ class PanelStorage {
       exportDate: new Date().toISOString(),
       version: '1.0'
     };
-    this.exportData(data, 'fransceiver-blocked-regex.json');
+    this.exportData(data, 'fransyfox-blocked-regex.json');
   }
 
   importData(file: File, callback: ImportDataCallback): void {

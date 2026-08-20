@@ -47,16 +47,16 @@
     return null;
   }
 
-  type FransceiverUrlUtilsType = {
+  type FransyfoxUrlUtilsType = {
     cleanUrl: typeof cleanUrl;
     extractJsUrlFromStack: typeof extractJsUrlFromStack;
   };
 
   const globalObj = globalThis as typeof globalThis & {
-    FransceiverUrlUtils?: Partial<FransceiverUrlUtilsType>;
+    FransyfoxUrlUtils?: Partial<FransyfoxUrlUtilsType>;
   };
 
-  globalObj.FransceiverUrlUtils = Object.assign(globalObj.FransceiverUrlUtils || {}, {
+  globalObj.FransyfoxUrlUtils = Object.assign(globalObj.FransyfoxUrlUtils || {}, {
     cleanUrl,
     extractJsUrlFromStack
   });

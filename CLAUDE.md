@@ -1,4 +1,4 @@
-# Fransceiver - Cross-Browser postMessage Tracker
+# Fransyfox - Cross-Browser postMessage Tracker
 
 Manifest V3 browser extension that tracks and analyzes `postMessage` listeners
 and messages on web pages. Ships for Chrome/Chromium (side panel) and
@@ -6,7 +6,7 @@ Firefox 128+ (extension sidebar). Designed for security researchers to
 understand cross-frame communication patterns.
 
 Tribute to Frans Rosén's [postMessage-tracker](https://github.com/fransr/postMessage-tracker).
-Downstream-of-downstream: postMessage-tracker → FancyTracker → FransyTracker → Fransceiver.
+Downstream-of-downstream: postMessage-tracker → FancyTracker → FransyTracker → Fransyfox.
 
 ## Project Structure
 
@@ -48,7 +48,7 @@ Runtime JavaScript is built from `src/` into `dist/chrome/` and
   (requires Firefox 128+ for `world: "MAIN"` via the `scripting` API).
 - **bridge.js** runs in the ISOLATED world and talks to the service worker.
 - MAIN ↔ ISOLATED communication uses document `CustomEvent`s
-  (`fransceiver:to-bridge` / `fransceiver:to-main`) whose detail is a JSON
+  (`fransyfox:to-bridge` / `fransyfox:to-main`) whose detail is a JSON
   string, so tracker traffic never appears as page `message` events.
 
 ### Background (service worker / event page)
@@ -65,7 +65,7 @@ Runtime JavaScript is built from `src/` into `dist/chrome/` and
 - Never call `chrome.sidePanel.*` directly outside this module.
 
 ### Self-identity / blacklists
-- Own envelopes use the `FRANSCEIVER_*` protocol types.
+- Own envelopes use the `FRANSYFOX_*` protocol types.
 - `EXTENSION_BLACKLIST` keeps legacy tokens (`event-tracker*`,
   `POSTMESSAGE_TRACKER_*`, `FransyTracker:`) so old tracker instances stay
   silent - keep those tokens when editing.
@@ -83,7 +83,7 @@ Runtime JavaScript is built from `src/` into `dist/chrome/` and
 - `chrome.devtools.panels.openResource` does not exist in Firefox - the
   devtools driver answers `{success: false}` there. Guarded in `devtools.ts`.
 - Keep `manifest.firefox.json` in sync with `manifest.json` (permissions,
-  version). Gecko id: `fransceiver@GangGreenTemperTatum.github.io` (change before AMO publish).
+  version). Gecko id: `fransyfox@GangGreenTemperTatum.github.io` .
 
 ### E2E (Firefox)
 - `npm run e2e:firefox` runs `scripts/e2e/firefox_e2e.py`: installs the

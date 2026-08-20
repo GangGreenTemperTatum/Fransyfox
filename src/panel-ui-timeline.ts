@@ -2,12 +2,12 @@ import type { FrameNode, MessageEventRecord } from './types/listener';
 
 export {};
 
-// Sequence / timeline view for the Fransceiver panel.
+// Sequence / timeline view for the Fransyfox panel.
 //
 // Frames are vertical lanes; time flows top-to-bottom. Each captured message is
 // a horizontal arrow from its source lane to its target lane at its time row.
 // Useful for reading handshakes (OAuth popups, payment iframes, SDK init).
-const timelineLog = FransceiverLogger.scoped('panel-ui-timeline');
+const timelineLog = FransyfoxLogger.scoped('panel-ui-timeline');
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const EXTERNAL_ID = -9999;
@@ -58,7 +58,7 @@ class PanelUITimeline {
   render(frames: FrameNode[], messages: MessageEventRecord[], options?: RenderOptions): void {
     const container = this.ensureContainer();
     if (!container) {
-      timelineLog.warn('Fransceiver: Timeline canvas element not found');
+      timelineLog.warn('Fransyfox: Timeline canvas element not found');
       return;
     }
     container.textContent = '';

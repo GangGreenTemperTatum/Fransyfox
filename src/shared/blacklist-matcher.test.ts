@@ -7,7 +7,7 @@ const TOKENS = [
   'react-devtools',
   'domlogger',
   'POSTMESSAGE_TRACKER_DATA',
-  'Fransceiver:',
+  'Fransyfox:',
   '__postmessagetrackername__'
 ];
 
@@ -77,7 +77,7 @@ describe('shared/blacklist-matcher', () => {
       'wappalyzer',
       'Wappa Lyzer says hi',
       'wappa~!~lyzer',
-      'Fransceiver: initialized',
+      'Fransyfox: initialized',
       'fransytracker initialized',
       '__postmessagetrackername__',
       'post message tracker name',

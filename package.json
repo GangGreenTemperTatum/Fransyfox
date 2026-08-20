@@ -1,6 +1,6 @@
 {
-  "name": "fransceiver",
-  "version": "0.1.0",
+  "name": "fransyfox",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "postMessage transceiver - intercept, track, and analyze cross-frame postMessage listeners and messages",

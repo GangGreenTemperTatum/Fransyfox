@@ -3,9 +3,9 @@ import { VirtualHeightIndex } from './shared/virtual-height-index';
 
 export {};
 
-// Message tab rendering for Fransceiver panel
+// Message tab rendering for Fransyfox panel
 // Extracted from panel-ui.js for better organization
-const messagesLog = FransceiverLogger.scoped('panel-ui-messages');
+const messagesLog = FransyfoxLogger.scoped('panel-ui-messages');
 
 type PanelMessageRecord = MessageEventRecord & {
   tabId?: number;
@@ -622,7 +622,7 @@ class PanelUIMessages {
       event.stopPropagation();
       dropdown.classList.remove('show');
       // Loosely coupled to the panel: it loads this message into the Composer.
-      document.dispatchEvent(new CustomEvent('fransceiver:repeater-load', {
+      document.dispatchEvent(new CustomEvent('fransyfox:repeater-load', {
         detail: {
           dataText: typeof message.dataText === 'string' ? message.dataText : '',
           dataType: typeof message.dataType === 'string' ? message.dataType : '',
@@ -641,7 +641,7 @@ class PanelUIMessages {
       event.stopPropagation();
       dropdown.classList.remove('show');
       if (typeof message.id === 'number') {
-        document.dispatchEvent(new CustomEvent('fransceiver:show-in-timeline', {
+        document.dispatchEvent(new CustomEvent('fransyfox:show-in-timeline', {
           detail: { id: message.id }
         }));
       }

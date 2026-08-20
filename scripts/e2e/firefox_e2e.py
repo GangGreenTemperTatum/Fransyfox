@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Fransceiver Firefox end-to-end test.
+"""Fransyfox Firefox end-to-end test.
 
 Launches a real Firefox with the built add-on (dist/firefox) installed as a
 temporary add-on, serves a fixture page that registers postMessage listeners
 and posts messages, then verifies the full pipeline end-to-end:
 
-  1. MAIN-world content script injection (window.FransceiverMainLoaded)
+  1. MAIN-world content script injection (window.FransyfoxMainLoaded)
   2. Listener capture: page listener -> main world hook -> bridge ->
      service worker -> panel port protocol (REQUEST_STATE)
   3. Message capture: page postMessage -> bridge batching -> service worker
@@ -115,7 +115,7 @@ def find_geckodriver():
 
 
 def make_addon_zip():
-    zip_path = ARTIFACTS / "fransceiver-e2e.zip"
+    zip_path = ARTIFACTS / "fransyfox-e2e.zip"
     zip_path.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as archive:
         for path in sorted(DIST_FIREFOX.rglob("*")):
@@ -145,7 +145,7 @@ def extension_uuid(driver):
     var candidates = Array.from(document.querySelectorAll('li, section, div'))
       .filter(function (el) {
         var text = el.textContent || '';
-        return text.indexOf('Fransceiver') !== -1 && text.indexOf('Manifest URL') !== -1;
+        return text.indexOf('Fransyfox') !== -1 && text.indexOf('Manifest URL') !== -1;
       })
       .sort(function (a, b) {
         return (a.textContent || '').length - (b.textContent || '').length;
@@ -181,7 +181,7 @@ def fixture_ready(driver, url):
     while time.time() < end:
         try:
             state = driver.execute_script(
-                "return {loaded: window.FransceiverMainLoaded === true,"
+                "return {loaded: window.FransyfoxMainLoaded === true,"
                 " posted: (window.__frxE2E || {}).messagesPosted || 0};"
             )
         except Exception:  # noqa: BLE001
@@ -392,7 +392,7 @@ def main():
             state = fixture_ready(driver, fixture_url)
         check(
             bool(state.get("loaded")),
-            "MAIN-world content script injected (window.FransceiverMainLoaded)",
+            "MAIN-world content script injected (window.FransyfoxMainLoaded)",
         )
         check(
             state.get("posted", 0) >= 6,
@@ -417,7 +417,7 @@ def main():
             label="panel logo",
         )
         check(
-            bool(logo) and "fransceiver" in str(logo).lower(),
+            bool(logo) and "fransyfox" in str(logo).lower(),
             "panel UI rendered in extension page (logo: %r)" % logo,
         )
 
@@ -593,7 +593,7 @@ def main():
             print("  - %s" % failure)
         sys.exit(1)
 
-    print("\nRESULT: PASS - Fransceiver Firefox e2e pipeline verified")
+    print("\nRESULT: PASS - Fransyfox Firefox e2e pipeline verified")
     sys.exit(0)
 
 

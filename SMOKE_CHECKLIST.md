@@ -1,4 +1,4 @@
-# Fransceiver Smoke Checklist
+# Fransyfox Smoke Checklist
 
 Run this checklist before and after migration steps to confirm behavior parity.
 

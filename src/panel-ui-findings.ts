@@ -2,9 +2,9 @@ import type { Finding, ListenerRecord } from './types/listener';
 
 export {};
 
-// Findings tab rendering for Fransceiver panel
+// Findings tab rendering for Fransyfox panel
 // Extracted from panel-ui.js for better organization
-const findingsLog = FransceiverLogger.scoped('panel-ui-findings');
+const findingsLog = FransyfoxLogger.scoped('panel-ui-findings');
 
 interface PanelStorageLike {
   isListenerBlocked: (listener: ListenerRecord) => unknown;
@@ -109,8 +109,8 @@ class PanelUIFindings {
       return toFindingArray(listener.findings);
     }
 
-    const hasRules = !!(globalThis.FransceiverFindings && FransceiverFindings.evaluateListener);
-    const rulesVersion = globalThis.FransceiverFindings ? FransceiverFindings.version : null;
+    const hasRules = !!(globalThis.FransyfoxFindings && FransyfoxFindings.evaluateListener);
+    const rulesVersion = globalThis.FransyfoxFindings ? FransyfoxFindings.version : null;
 
     if (listener.findingsVersion && rulesVersion && listener.findingsVersion === rulesVersion) {
       return [];
@@ -119,7 +119,7 @@ class PanelUIFindings {
     if (!hasRules) return [];
 
     const result =
-      FransceiverFindings.evaluateListener(listener as unknown as Record<string, unknown>) ||
+      FransyfoxFindings.evaluateListener(listener as unknown as Record<string, unknown>) ||
       { findings: [], errors: [] };
 
     const findings = toFindingArray(result.findings);
@@ -155,8 +155,8 @@ class PanelUIFindings {
         }
 
         const rawRule =
-          globalThis.FransceiverFindings && FransceiverFindings.getRuleById
-            ? FransceiverFindings.getRuleById(findingId)
+          globalThis.FransyfoxFindings && FransyfoxFindings.getRuleById
+            ? FransyfoxFindings.getRuleById(findingId)
             : null;
 
         results.push({

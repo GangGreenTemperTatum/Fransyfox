@@ -15,7 +15,7 @@
   function shouldPrefix(args: unknown[]): boolean {
     if (!args || args.length === 0) return true;
     const first = args[0];
-    return !(typeof first === 'string' && first.startsWith('Fransceiver'));
+    return !(typeof first === 'string' && first.startsWith('Fransyfox'));
   }
 
   function emit(levelName: LevelName, scope: string | undefined, args: unknown[]): void {
@@ -23,7 +23,7 @@
     if (LEVELS[levelName] < currentLevel) return;
 
     if (shouldPrefix(args)) {
-      const prefix = scope ? `Fransceiver:${scope}` : 'Fransceiver';
+      const prefix = scope ? `Fransyfox:${scope}` : 'Fransyfox';
       method(`[${prefix}]`, ...args);
       return;
     }
@@ -46,16 +46,16 @@
     }
   }
 
-  type FransceiverLoggerType = {
+  type FransyfoxLoggerType = {
     scoped: typeof scoped;
     setLevel: typeof setLevel;
   };
 
   const globalObj = globalThis as typeof globalThis & {
-    FransceiverLogger?: Partial<FransceiverLoggerType>;
+    FransyfoxLogger?: Partial<FransyfoxLoggerType>;
   };
 
-  globalObj.FransceiverLogger = Object.assign(globalObj.FransceiverLogger || {}, {
+  globalObj.FransyfoxLogger = Object.assign(globalObj.FransyfoxLogger || {}, {
     scoped,
     setLevel
   });

@@ -30,17 +30,17 @@ const PORT_RESPONSE_TYPES = new Set([
 ] as const);
 
 const BRIDGE_MESSAGE_TYPES = new Set([
-  'FRANSCEIVER_DATA',
-  'FRANSCEIVER_EVENT',
-  'FRANSCEIVER_RULES',
-  'FRANSCEIVER_SETTINGS',
-  'FRANSCEIVER_ACTIVE',
-  'FRANSCEIVER_BLACKLIST',
-  'FRANSCEIVER_RULES_REQUEST',
-  'FRANSCEIVER_SETTINGS_REQUEST',
-  'FRANSCEIVER_ACTIVE_REQUEST',
-  'FRANSCEIVER_BLACKLIST_REQUEST',
-  'FRANSCEIVER_SEND'
+  'FRANSYFOX_DATA',
+  'FRANSYFOX_EVENT',
+  'FRANSYFOX_RULES',
+  'FRANSYFOX_SETTINGS',
+  'FRANSYFOX_ACTIVE',
+  'FRANSYFOX_BLACKLIST',
+  'FRANSYFOX_RULES_REQUEST',
+  'FRANSYFOX_SETTINGS_REQUEST',
+  'FRANSYFOX_ACTIVE_REQUEST',
+  'FRANSYFOX_BLACKLIST_REQUEST',
+  'FRANSYFOX_SEND'
 ] as const);
 
 // DOM CustomEvent names carrying tracker envelopes between the MAIN and
@@ -48,8 +48,8 @@ const BRIDGE_MESSAGE_TYPES = new Set([
 // to page 'message' listeners (and to our own postMessage hooks), so tracker
 // traffic does not amplify page message dispatch. The CustomEvent detail is
 // always a JSON string - primitives are world-safe across isolated worlds.
-export const TRACKER_EVENT_TO_BRIDGE = 'fransceiver:to-bridge';
-export const TRACKER_EVENT_TO_MAIN = 'fransceiver:to-main';
+export const TRACKER_EVENT_TO_BRIDGE = 'fransyfox:to-bridge';
+export const TRACKER_EVENT_TO_MAIN = 'fransyfox:to-main';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;

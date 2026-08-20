@@ -4,7 +4,7 @@ import './constants';
 
 describe('shared/constants', () => {
   test('registers constants on global namespace', () => {
-    const constants = (globalThis as { FransceiverConstants?: Record<string, unknown> }).FransceiverConstants;
+    const constants = (globalThis as { FransyfoxConstants?: Record<string, unknown> }).FransyfoxConstants;
     expect(constants).toBeTruthy();
     expect(constants?.STORAGE_KEYS).toBeTruthy();
     expect(constants?.EXTENSION_BLACKLIST).toBeTruthy();

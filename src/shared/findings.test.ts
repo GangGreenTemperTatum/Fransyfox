@@ -7,7 +7,7 @@ type FindingsEngine = {
 };
 
 function engine(): FindingsEngine | undefined {
-  return (globalThis as { FransceiverFindings?: FindingsEngine }).FransceiverFindings;
+  return (globalThis as { FransyfoxFindings?: FindingsEngine }).FransyfoxFindings;
 }
 
 function findingIds(code: string): string[] {
