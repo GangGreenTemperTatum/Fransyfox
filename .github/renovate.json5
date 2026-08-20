@@ -1,0 +1,29 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":automergeDigest",
+    "helpers:pinGitHubActionDigests",
+  ],
+  dependencyDashboardTitle: "Renovate Dashboard 🤖",
+  minimumReleaseAge: "3 days",
+  automerge: true,
+  rebaseWhen: "conflicted",
+  commitBodyTable: true,
+  packageRules: [
+    {
+      description: "Auto-merge non-major dependency updates",
+      matchUpdateTypes: ["minor", "patch"],
+      automerge: true,
+      automergeType: "pr",
+    },
+    {
+      description: "Keep GitHub Actions digest pins current",
+      matchManagers: ["github-actions"],
+      pinDigests: true,
+      automerge: true,
+    },
+  ],
+}
