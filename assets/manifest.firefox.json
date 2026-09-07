@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Fransyfox",
   "description": "postMessage transceiver: intercept, track, and analyze cross-frame postMessage listeners and messages",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "author": "Fransyfox contributors",
   "homepage_url": "https://github.com/GangGreenTemperTatum/Fransyfox",
   "browser_specific_settings": {
