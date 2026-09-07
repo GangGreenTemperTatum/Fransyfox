@@ -532,7 +532,7 @@ function broadcastExtensionActiveState() {
         });
     });
 }
-function setExtensionActiveState(nextActive: boolean, options: ExtensionActiveOptions = {}) {
+function setExtensionActiveState(nextActive: boolean, options: ExtensionActiveOptions = {}): Promise<void> {
     const normalized = nextActive !== false;
     const persist = options.persist !== false;
     const forceSync = options.forceSync === true;
@@ -540,7 +540,7 @@ function setExtensionActiveState(nextActive: boolean, options: ExtensionActiveOp
     const activateNow = changed && normalized;
     extensionActive = normalized;
     if (!changed && !forceSync) {
-        return;
+        return Promise.resolve();
     }
     if (persist) {
         chrome.storage.local.set({ [STORAGE_KEYS.EXTENSION_ACTIVE]: extensionActive });
@@ -557,10 +557,11 @@ function setExtensionActiveState(nextActive: boolean, options: ExtensionActiveOp
     }
     const syncPromise = synchronizeContentScripts();
     if (activateNow) {
-        syncPromise.then(() => injectIntoExistingTabs()).catch(() => {
+        void syncPromise.then(() => injectIntoExistingTabs()).catch(() => {
             // Ignore sync failures here, they are already logged.
         });
     }
+    return syncPromise;
 }
 async function registerTrackerContentScripts() {
     if (!chrome.scripting || !chrome.scripting.getRegisteredContentScripts)
@@ -663,9 +664,9 @@ async function initializeServiceWorker() {
     loadSettings();
     // Wait for both persistent state AND settings to be fully loaded
     await initPromise;
-    setExtensionActiveState(extensionActive, { persist: false, forceSync: true });
+    await setExtensionActiveState(extensionActive, { persist: false, forceSync: true });
     if (extensionActive) {
-        injectIntoExistingTabs();
+        await injectIntoExistingTabs();
     }
     try {
         const tabs = await chrome.tabs.query({ active: true, currentWindow: true });

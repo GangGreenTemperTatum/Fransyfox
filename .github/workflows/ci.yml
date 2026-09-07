@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
       - name: Set up Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
@@ -39,7 +41,7 @@ jobs:
       - name: Build
         run: npm run build
       - name: Lint Firefox package
-        run: npx --yes web-ext lint --source-dir dist/firefox --no-config-discovery
+        run: npm run e2e:firefox:lint
       - name: Upload build artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -55,27 +57,62 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
       - name: Download build artifacts
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: dist
           path: dist
-      - name: Install Firefox Nightly (release builds enforce add-on signing)
+      - name: Install Firefox Developer Edition
+        env:
+          FIREFOX_VERSION: "148.0b15"
+          FIREFOX_SHA256: db7144bed6613578ad176b982e1560866bad7f0529b4074a4f997735b05cafdb
         run: |
-          wget -q "https://download.mozilla.org/?product=firefox-nightly-latest-ssl&os=linux64&lang=en-US" -O firefox.tar.xz
+          wget -q "https://archive.mozilla.org/pub/devedition/releases/${FIREFOX_VERSION}/linux-x86_64/en-US/firefox-${FIREFOX_VERSION}.tar.xz" -O firefox.tar.xz
+          echo "${FIREFOX_SHA256}  firefox.tar.xz" | sha256sum --check --strict
           mkdir -p "$HOME/firefox"
           tar xf firefox.tar.xz -C "$HOME/firefox" --strip-components=1
           "$HOME/firefox/firefox" --version
       - name: Install geckodriver
+        env:
+          GECKODRIVER_VERSION: "0.37.1"
+          GECKODRIVER_SHA256: e815130ea95983e162ae91843b48d3a3ce991735635fce83a647afde21e09f7e
         run: |
-          VER=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | jq -r .tag_name)
-          wget -q "https://github.com/mozilla/geckodriver/releases/download/${VER}/geckodriver-${VER}-linux64.tar.gz"
-          tar xzf "geckodriver-${VER}-linux64.tar.gz"
-          sudo mv geckodriver /usr/local/bin/
+          wget -q "https://github.com/mozilla/geckodriver/releases/download/v${GECKODRIVER_VERSION}/geckodriver-v${GECKODRIVER_VERSION}-linux64.tar.gz"
+          echo "${GECKODRIVER_SHA256}  geckodriver-v${GECKODRIVER_VERSION}-linux64.tar.gz" | sha256sum --check --strict
+          tar xzf "geckodriver-v${GECKODRIVER_VERSION}-linux64.tar.gz"
+          sudo install -m 0755 geckodriver /usr/local/bin/geckodriver
           geckodriver --version
-      - name: Install Python deps
-        run: python3 -m pip install selenium
+      - name: Install Python dependencies
+        run: "python3 -m pip install --require-hashes --only-binary=:all: -r scripts/e2e/requirements.txt"
       - name: Run Firefox e2e
         env:
           FIREFOX_BIN: "$HOME/firefox/firefox"
         run: python3 scripts/e2e/firefox_e2e.py
+
+  e2e-chrome:
+    name: End-to-end (Chrome)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Download build artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: dist
+          path: dist
+      - name: Run Chrome e2e
+        env:
+          CHROME_BIN: google-chrome
+        run: npm run e2e:chrome

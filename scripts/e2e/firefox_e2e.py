@@ -191,6 +191,18 @@ def fixture_ready(driver, url):
         time.sleep(0.5)
     return state
 
+def tracker_scripts_registered(driver):
+    return poll(
+        driver,
+        "return chrome.scripting.getRegisteredContentScripts().then(function (scripts) {"
+        "  var ids = new Set(scripts.map(function (script) { return script.id; }));"
+        "  return ids.has('fransyfox-main-world') && ids.has('fransyfox-bridge-world');"
+        "});",
+        lambda value: value is True,
+        15,
+        label="tracker content-script registration",
+    )
+
 
 HARNESS_PREAMBLE = """
         function request(port, payload) {
@@ -383,26 +395,6 @@ def main():
 
         server, port = serve(SCRIPT_DIR)
         fixture_url = "http://127.0.0.1:%d/fixture.html?marker=%s" % (port, MARKER)
-        driver.get(fixture_url)
-
-        state = fixture_ready(driver, fixture_url)
-        if not state.get("loaded"):
-            log("MAIN world flag missing on first load - reloading once")
-            driver.refresh()
-            state = fixture_ready(driver, fixture_url)
-        check(
-            bool(state.get("loaded")),
-            "MAIN-world content script injected (window.FransyfoxMainLoaded)",
-        )
-        check(
-            state.get("posted", 0) >= 6,
-            "fixture posted messages (%d)" % state.get("posted", 0),
-        )
-
-        time.sleep(2)
-
-        fixture_handle = driver.current_window_handle
-        driver.switch_to.new_window("tab")
 
         uuid = extension_uuid(driver)
         panel_url = "moz-extension://%s/panel.html" % uuid
@@ -420,8 +412,28 @@ def main():
             bool(logo) and "fransyfox" in str(logo).lower(),
             "panel UI rendered in extension page (logo: %r)" % logo,
         )
-
+        check(
+            tracker_scripts_registered(driver) is True,
+            "dynamic MAIN/ISOLATED content scripts registered before fixture navigation",
+        )
         driver.save_screenshot(str(ARTIFACTS / "panel.png"))
+
+        panel_handle = driver.current_window_handle
+        driver.switch_to.new_window("tab")
+        state = fixture_ready(driver, fixture_url)
+        check(
+            bool(state.get("loaded")),
+            "MAIN-world content script injected (window.FransyfoxMainLoaded)",
+        )
+        check(
+            state.get("posted", 0) >= 6,
+            "fixture posted messages (%d)" % state.get("posted", 0),
+        )
+
+        time.sleep(2)
+        fixture_handle = driver.current_window_handle
+        driver.switch_to.window(panel_handle)
+
 
         # Phase 1: core pipeline.
         result = run_panel_harness(driver, MARKER, panel_harness(STATE_BODY))
