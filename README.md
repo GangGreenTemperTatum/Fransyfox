@@ -11,6 +11,7 @@
 [![E2E](https://img.shields.io/github/actions/workflow/status/GangGreenTemperTatum/Fransyfox/ci.yml?branch=main&label=Firefox%20e2e)](https://github.com/GangGreenTemperTatum/Fransyfox/actions)
 [![Chrome](https://img.shields.io/badge/Chrome-MV3-blue)](https://github.com/GangGreenTemperTatum/Fransyfox#install)
 [![Firefox](https://img.shields.io/badge/Firefox-128%2B-orange)](https://github.com/GangGreenTemperTatum/Fransyfox#install)
+[![AMO](https://img.shields.io/badge/AMO-Fransyfox-FF7139?logo=firefox-browser)](https://addons.mozilla.org/en-US/firefox/addon/fransyfox/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/GangGreenTemperTatum/Fransyfox?style=social)](https://github.com/GangGreenTemperTatum/Fransyfox/stargazers)
 
@@ -122,9 +123,13 @@ Then load `dist/chrome/` (Chrome) or `dist/firefox/manifest.json` (Firefox)
 the same way as above. Quality gates: `npm run typecheck`, `npm run lint`,
 `npm run test`.
 
-Permanent Firefox install requires an AMO-signed package (add-on ID and
-homepage already point at this repo:
-`fransyfox@GangGreenTemperTatum.github.io`).
+### Firefox Add-on (AMO)
+
+<div align="center">
+<img src="assets/screenshots/fransyfox-amo-banner.png" alt="Fransyfox — Firefox Extension for postMessage Tracking" width="640"/>
+</div>
+
+Fransyfox is available on [addons.mozilla.org](https://addons.mozilla.org/en-US/firefox/addon/fransyfox/). Install it directly from AMO for a permanent Firefox extension that auto-updates.
 
 ### Firefox vs Chrome
 
