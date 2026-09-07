@@ -17,7 +17,7 @@
     "e2e:firefox:lint": "web-ext lint --source-dir dist/firefox"
   },
   "devDependencies": {
-    "@types/chrome": "^0.1.16",
+    "@types/chrome": "^0.2.0",
     "@types/node": "^22.13.5",
     "@typescript-eslint/eslint-plugin": "^8.24.0",
     "@typescript-eslint/parser": "^8.24.0",
