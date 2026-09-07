@@ -15,7 +15,7 @@
     "test": "vitest run",
     "e2e:firefox": "python3 scripts/e2e/firefox_e2e.py",
     "e2e:chrome": "node scripts/e2e/chrome_e2e.mjs",
-    "e2e:firefox:lint": "web-ext lint --source-dir dist/firefox"
+    "e2e:firefox:lint": "npx --yes web-ext@10.6.0 lint --source-dir dist/firefox --no-config-discovery"
   },
   "devDependencies": {
     "@types/chrome": "^0.2.0",
@@ -28,7 +28,6 @@
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.24.0",
     "vite": "^6.1.0",
-    "vitest": "^3.0.5",
-    "web-ext": "10.6.0"
+    "vitest": "^3.0.5"
   }
 }
