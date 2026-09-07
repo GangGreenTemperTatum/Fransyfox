@@ -130,7 +130,7 @@ class PanelUI {
         if (!listener)
             return [];
         if (Array.isArray(listener.findings)) {
-            return listener.findings as FindingWithDetails[];
+            return listener.findings;
         }
         const hasRules = globalThis.FransyfoxFindings && FransyfoxFindings.evaluateListener;
         const rulesVersion = globalThis.FransyfoxFindings ? FransyfoxFindings.version : null;
@@ -415,7 +415,7 @@ class PanelUI {
                     : null;
                 entries.push({
                     finding: typeof finding === 'string' ? { id: findingId } : finding,
-                    rule: rule as FindingRule | null,
+                    rule: rule,
                     listener
                 });
             });
@@ -582,7 +582,7 @@ class PanelUI {
             e.stopPropagation();
             dropdown.classList.remove('show');
             const rawCode = listener.listener || '';
-            void this.copyTextWithFeedback(rawCode, kebabBtn as CopyFeedbackButton);
+            void this.copyTextWithFeedback(rawCode, kebabBtn);
         });
         dropdown.appendChild(copyItem);
 
@@ -1179,7 +1179,7 @@ class PanelUI {
                 results.push({
                     listener,
                     finding: typeof finding === 'string' ? { id: finding } : finding,
-                    rule: rule as FindingRule | null
+                    rule: rule
                 });
             }
         }
@@ -1219,7 +1219,7 @@ class PanelUI {
         return findings.filter((entry: FindingEntry) => {
             const rule = entry.rule || {};
             const finding = entry.finding || {};
-            const listener = entry.listener || ({ listener: '' } as ListenerRecord);
+            const listener = entry.listener || ({ listener: '' });
             const entrySeverity = rule.severity || 'medium';
             if (severity !== 'any' && entrySeverity !== severity) {
                 return false;

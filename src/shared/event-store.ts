@@ -125,7 +125,7 @@
           request.onsuccess = () => {
             const result = isRecord(request.result) ? request.result : null;
             const snapshot = result && isRecord(result.snapshot) ? result.snapshot : null;
-            resolve(snapshot as EventStoreSnapshot | null);
+            resolve(snapshot);
           };
         });
       },

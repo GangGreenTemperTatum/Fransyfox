@@ -600,7 +600,7 @@ class PanelUIMessages {
       event.stopPropagation();
       dropdown.classList.remove('show');
       const rawText = typeof message.dataText === 'string' ? message.dataText : '';
-      void this.copyTextWithFeedback(rawText, kebabBtn as CopyFeedbackButton);
+      void this.copyTextWithFeedback(rawText, kebabBtn);
     });
 
     const copyPostItem = document.createElement('button');
@@ -611,7 +611,7 @@ class PanelUIMessages {
       event.stopPropagation();
       dropdown.classList.remove('show');
       const snippet = this.buildPostMessageSnippet(message);
-      void this.copyTextWithFeedback(snippet, kebabBtn as CopyFeedbackButton);
+      void this.copyTextWithFeedback(snippet, kebabBtn);
     });
 
     const repeaterItem = document.createElement('button');

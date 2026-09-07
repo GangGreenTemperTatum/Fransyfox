@@ -64,7 +64,7 @@ function toFindingArray(value: unknown): FindingWithDetails[] {
 
 function toRule(value: Record<string, unknown> | null): FindingRule | null {
   if (!value) return null;
-  return value as FindingRule;
+  return value;
 }
 
 class PanelUIFindings {
@@ -119,7 +119,7 @@ class PanelUIFindings {
     if (!hasRules) return [];
 
     const result =
-      FransyfoxFindings.evaluateListener(listener as unknown as Record<string, unknown>) ||
+      FransyfoxFindings.evaluateListener(listener) ||
       { findings: [], errors: [] };
 
     const findings = toFindingArray(result.findings);
@@ -209,7 +209,7 @@ class PanelUIFindings {
     return findings.filter((entry) => {
       const rule = entry.rule || {};
       const finding = entry.finding || {};
-      const listener = entry.listener || ({ listener: '' } as ListenerRecord);
+      const listener = entry.listener || ({ listener: '' });
       const entrySeverity = rule.severity || 'medium';
 
       if (severity !== 'any' && entrySeverity !== severity) {
@@ -287,7 +287,7 @@ class PanelUIFindings {
           for (let i = 0; i < findings.length; i++) {
             const entry = findings[i];
             const rule = entry.rule;
-            const listener = entry.listener || ({ listener: '' } as ListenerRecord);
+            const listener = entry.listener || ({ listener: '' });
             const finding = entry.finding || { id: '' };
             const severity = rule && rule.severity ? rule.severity : 'medium';
 

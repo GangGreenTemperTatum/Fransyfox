@@ -45,7 +45,7 @@ function stubSidePanel(overrides: Record<string, unknown> = {}): SidePanelApiStu
     sidePanel: api,
     runtime: { lastError: null }
   });
-  return api as unknown as SidePanelApiStub;
+  return api;
 }
 
 function stubSidebarAction(overrides: Record<string, unknown> = {}): SidebarActionApiStub {
@@ -57,7 +57,7 @@ function stubSidebarAction(overrides: Record<string, unknown> = {}): SidebarActi
     ...overrides
   };
   vi.stubGlobal('browser', { sidebarAction: api });
-  return api as unknown as SidebarActionApiStub;
+  return api;
 }
 
 describe('getPanelSurfaceKind', () => {

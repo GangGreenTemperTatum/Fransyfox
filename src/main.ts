@@ -937,7 +937,7 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
             return;
         }
         if (message.type === SETTINGS_TYPE) {
-            updateMessageDebugSettings(detail as Partial<MessageDebugSettings>);
+            updateMessageDebugSettings(detail);
             return;
         }
         if (message.type === BLACKLIST_TYPE && Array.isArray(detail.blacklist)) {

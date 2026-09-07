@@ -998,7 +998,7 @@ function postToPanelPort(port: chrome.runtime.Port, payload: unknown) {
 }
 
 function asMessageEventRecords(events: Array<Record<string, unknown>>): MessageEventRecord[] {
-    return events.filter(shouldExposeStoredEvent) as MessageEventRecord[];
+    return events.filter(shouldExposeStoredEvent);
 }
 
 async function buildEventsSnapshot(restored = false) {

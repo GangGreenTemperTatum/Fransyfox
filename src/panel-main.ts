@@ -380,14 +380,14 @@ class PanelMain {
         // The Map view is rendered by its own module; tolerate it being absent
         // (e.g. if the script failed to load) so the rest of the panel works.
         if (typeof PanelUIMap !== 'undefined') {
-            const PanelUIMapCtor = PanelUIMap as unknown as { new (): PanelUIMapLike };
+            const PanelUIMapCtor = PanelUIMap;
             this.uiMap = new PanelUIMapCtor();
             this.uiMap.setSelectHandler((frameId: number | null) => this.onMapFrameSelected(frameId));
         } else {
             this.uiMap = null;
         }
         if (typeof PanelUITimeline !== 'undefined') {
-            const PanelUITimelineCtor = PanelUITimeline as unknown as { new (): PanelUITimelineLike };
+            const PanelUITimelineCtor = PanelUITimeline;
             this.uiTimeline = new PanelUITimelineCtor();
             this.uiTimeline.setSelectHandler((messageId: number) => this.onTimelineMessageSelected(messageId));
         } else {
@@ -2483,7 +2483,7 @@ class PanelMain {
         const payload = filtered.map((entry: PanelFindingsEntry) => {
             const rule = entry.rule || {};
             const finding = entry.finding || {};
-            const listener = entry.listener || ({ listener: '' } as ListenerRecord);
+            const listener = entry.listener || ({ listener: '' });
             return {
                 ruleId: rule.id || finding.id || null,
                 ruleTitle: rule.title || null,
