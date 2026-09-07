@@ -46,6 +46,17 @@ async function readCaptureState(page) {
     if (!fixture?.id) throw new Error('fixture tab not found');
 
     const port = chrome.runtime.connect({ name: 'chrome-e2e-harness' });
+    const waitForHello = new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('timed out waiting for initial STATE')), 15_000);
+      const listener = (message) => {
+        if (message?.type === 'STATE' && message.tabId === null) {
+          clearTimeout(timer);
+          port.onMessage.removeListener(listener);
+          resolve(message);
+        }
+      };
+      port.onMessage.addListener(listener);
+    });
     const request = (payload) => new Promise((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error(`timed out waiting for ${payload.expect}`)), 15_000);
       const listener = (message) => {
@@ -61,11 +72,20 @@ async function readCaptureState(page) {
     });
 
     try {
+      const hello = await waitForHello;
       const state = await request({ type: 'REQUEST_STATE', tabId: fixture.id, expect: 'STATE' });
       const events = await request({ type: 'REQUEST_EVENTS', expect: 'EVENTS' });
       const listenerText = (state.listeners || []).map((listener) => `${listener.listener || ''} ${listener.stack || ''}`).join(' ');
       const matchingEvents = (events.events || []).filter((event) => (event.dataText || '').includes(marker));
       return {
+        hello: {
+          type: hello.type,
+          tabId: hello.tabId,
+          listeners: Array.isArray(hello.listeners) ? hello.listeners.length : -1,
+          extensionActive: hello.extensionActive,
+          cached: hello.cached,
+          dataVersion: hello.dataVersion
+        },
         active: state.extensionActive,
         listenerCount: (state.listeners || []).length,
         probeDetected: listenerText.includes('frxProbeListener'),
@@ -77,7 +97,6 @@ async function readCaptureState(page) {
     }
   }, MARKER);
 }
-
 let browser;
 let fixtureServer;
 try {
@@ -90,7 +109,8 @@ try {
     enableExtensions: [DIST_CHROME],
     args: [
       '--no-first-run',
-      '--no-default-browser-check'
+      '--no-default-browser-check',
+      '--disable-gpu'
     ]
   });
 
@@ -118,26 +138,28 @@ try {
     { timeout: 15_000 }
   );
 
-  await workerClient.evaluate(async () => {
-    const deadline = Date.now() + 15_000;
-    while (Date.now() < deadline) {
-      const tabs = await chrome.tabs.query({});
-      const fixture = tabs.find((tab) => tab.url?.includes('/fixture.html'));
-      if (typeof fixture?.id === 'number') {
-        const options = await chrome.sidePanel.getOptions({ tabId: fixture.id });
-        if (options.enabled === true && options.path === 'panel.html') return;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    }
-    throw new Error('fixture tab side panel was not configured');
-  });
   const panelPage = await browser.newPage();
   await panelPage.goto(new URL('panel.html', worker.url()).href, { waitUntil: 'domcontentloaded' });
   await panelPage.waitForSelector('.logo', { timeout: 15_000 });
   assert.match(await panelPage.$eval('.logo', (element) => element.textContent ?? ''), /fransyfox/i, 'panel UI did not render');
+  await panelPage.waitForFunction(async () => {
+    const tabs = await chrome.tabs.query({});
+    const fixture = tabs.find((tab) => tab.url?.includes('/fixture.html'));
+    if (typeof fixture?.id !== 'number') return false;
+    const options = await chrome.sidePanel.getOptions({ tabId: fixture.id });
+    return options.enabled === true && options.path === 'panel.html';
+  }, { timeout: 15_000 });
 
   const capture = await readCaptureState(panelPage);
   assert.equal(capture.active, true, 'service worker is inactive');
+  assert.deepEqual(capture.hello, {
+    type: 'STATE',
+    tabId: null,
+    listeners: 0,
+    extensionActive: true,
+    cached: true,
+    dataVersion: 0
+  }, 'live panel port received an invalid initial STATE');
   assert.ok(capture.listenerCount >= 1, `expected captured listener, got ${capture.listenerCount}`);
   assert.equal(capture.probeDetected, true, 'fixture listener was not captured');
   assert.ok(capture.matchingEvents >= 1, `expected captured messages, got ${capture.matchingEvents}`);

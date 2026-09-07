@@ -15,6 +15,7 @@ import {
     sanitizeListenerRecord
 } from './shared/listener-limits';
 import { createKeyedTaskScheduler } from './shared/keyed-task-scheduler';
+import { registerInitializedPort } from './shared/initialized-port';
 import { MAX_USER_REGEX_RULES, compileSafeRegex, limitRegexInput } from './shared/safe-regex';
 import { normalizeBoolean, normalizeMatchReplaceRules, normalizeMessageDebugSettings, normalizeString, normalizeStringArray } from './contracts/state';
 import type { ListenerRecord, MessageEventRecord, FrameNode, FrameSeverity } from './types/listener';
@@ -105,6 +106,10 @@ let contentScriptSyncPromise = Promise.resolve();
 // messages carry only that tab's listeners. Versions are tracked per tab so
 // changes in one tab don't invalidate another tab's panel.
 const portTabIds = new Map<chrome.runtime.Port, number>();
+function removePanelPort(port: chrome.runtime.Port): void {
+    connectedPorts = connectedPorts.filter((candidate) => candidate !== port);
+    portTabIds.delete(port);
+}
 const tabDataVersions: Record<string, number> = {};
 function bumpTabDataVersion(tabId: number | string) {
     const key = String(tabId);
@@ -989,12 +994,15 @@ let pendingEventVersion = 0;
 let pendingEventEvictedCount = 0;
 let eventAppendNotifyTimer: ReturnType<typeof setTimeout> | null = null;
 
-function postToPanelPort(port: chrome.runtime.Port, payload: unknown) {
+function postToPanelPort(port: chrome.runtime.Port, payload: unknown): boolean {
     try {
         port.postMessage(payload);
+        return true;
     }
     catch (error) {
-        log.info('Fransyfox: Failed to post panel event payload:', error);
+        log.info('Fransyfox: Failed to post panel payload:', error);
+        removePanelPort(port);
+        return false;
     }
 }
 
@@ -1014,8 +1022,8 @@ async function buildEventsSnapshot(restored = false) {
     };
 }
 
-async function postEventsSnapshot(port: chrome.runtime.Port, restored = false) {
-    postToPanelPort(port, await buildEventsSnapshot(restored));
+async function postEventsSnapshot(port: chrome.runtime.Port, restored = false): Promise<boolean> {
+    return postToPanelPort(port, await buildEventsSnapshot(restored));
 }
 
 function resetPendingEventAppends(): void {
@@ -1864,76 +1872,79 @@ chrome.tabs.onRemoved.addListener(async function (tabId: number) {
     // Only persist listener data changes
     persistentState.debouncedSave();
 });
-chrome.runtime.onConnect.addListener(async function (port: chrome.runtime.Port) {
-    await initPromise;
-    connectedPorts.push(port);
-    port.onMessage.addListener(async function (msg: unknown) {
-        const safeMsg = parsePortRequestMessage(msg);
-        if (!safeMsg)
-            return;
-        if (safeMsg.type === PORT_MESSAGES.REQUEST_STATE) {
-            const requestedTabId = typeof safeMsg.tabId === 'number' ? safeMsg.tabId : null;
-            if (requestedTabId !== null) {
-                portTabIds.set(port, requestedTabId);
-            }
-            port.postMessage(buildStateMessage(getPortTabId(port)));
-            return;
-        }
-        if (safeMsg.type === PORT_MESSAGES.REQUEST_EVENTS) {
-            await postEventsSnapshot(port, eventStore.wasHydrated());
-            return;
-        }
-        if (safeMsg.type === PORT_MESSAGES.REQUEST_FRAME_TREE) {
-            const requestedTabId = typeof safeMsg.tabId === 'number' ? safeMsg.tabId : null;
-            if (requestedTabId !== null) {
-                portTabIds.set(port, requestedTabId);
-            }
-            const targetTabId = getPortTabId(port);
-            port.postMessage(buildFrameTreeMessage(targetTabId));
-            // Kick a structure refresh so the next push reflects live frames.
-            if (typeof targetTabId === 'number') {
-                scheduleFrameStructureRefresh(targetTabId);
-            }
-            return;
-        }
-        if (safeMsg.type === PORT_MESSAGES.CLEAR_EVENTS) {
-            const targetTabId =
-                typeof safeMsg.tabId === 'number'
-                    ? safeMsg.tabId
-                    : selectedId > 0
-                        ? selectedId
-                        : null;
-            await clearMessageEventsForTab(targetTabId, 'manual');
-            return;
-        }
-        if (safeMsg.type === PORT_MESSAGES.CLEAR_LISTENERS) {
-            const tabId = safeMsg.tabId ? Number(safeMsg.tabId) : selectedId;
-            const key = String(tabId);
-            tab_listeners[key] = [];
-            tab_listener_keys[key] = new Set();
-            persistentState.debouncedSave();
-            bumpTabDataVersion(key);
-            port.postMessage({
-                type: PORT_MESSAGES.LISTENERS_CLEARED,
-                timestamp: Date.now()
+chrome.runtime.onConnect.addListener(function (port: chrome.runtime.Port) {
+    registerInitializedPort(port, initPromise, {
+        onConnected: () => {
+            connectedPorts.push(port);
+            // Lightweight hello so the panel's status badge initializes instantly.
+            // The panel issues REQUEST_STATE with its tabId immediately, which returns
+            // the real per-tab listener data.
+            return postToPanelPort(port, {
+                type: PORT_MESSAGES.STATE,
+                tabId: null,
+                listeners: [],
+                extensionActive: extensionActive,
+                cached: true,
+                timestamp: Date.now(),
+                dataVersion: 0
             });
+        },
+        onMessage: async (msg: unknown) => {
+            const safeMsg = parsePortRequestMessage(msg);
+            if (!safeMsg) return;
+            if (safeMsg.type === PORT_MESSAGES.REQUEST_STATE) {
+                const requestedTabId = typeof safeMsg.tabId === 'number' ? safeMsg.tabId : null;
+                if (requestedTabId !== null) {
+                    portTabIds.set(port, requestedTabId);
+                }
+                return postToPanelPort(port, buildStateMessage(getPortTabId(port)));
+            }
+            if (safeMsg.type === PORT_MESSAGES.REQUEST_EVENTS) {
+                return postEventsSnapshot(port, eventStore.wasHydrated());
+            }
+            if (safeMsg.type === PORT_MESSAGES.REQUEST_FRAME_TREE) {
+                const requestedTabId = typeof safeMsg.tabId === 'number' ? safeMsg.tabId : null;
+                if (requestedTabId !== null) {
+                    portTabIds.set(port, requestedTabId);
+                }
+                const targetTabId = getPortTabId(port);
+                const delivered = postToPanelPort(port, buildFrameTreeMessage(targetTabId));
+                // Kick a structure refresh so the next push reflects live frames.
+                if (delivered && typeof targetTabId === 'number') {
+                    scheduleFrameStructureRefresh(targetTabId);
+                }
+                return delivered;
+            }
+            if (safeMsg.type === PORT_MESSAGES.CLEAR_EVENTS) {
+                const targetTabId =
+                    typeof safeMsg.tabId === 'number'
+                        ? safeMsg.tabId
+                        : selectedId > 0
+                            ? selectedId
+                            : null;
+                await clearMessageEventsForTab(targetTabId, 'manual');
+                return true;
+            }
+            if (safeMsg.type === PORT_MESSAGES.CLEAR_LISTENERS) {
+                const tabId = typeof safeMsg.tabId === 'number' ? safeMsg.tabId : selectedId;
+                if (!Number.isSafeInteger(tabId) || tabId < 0) return true;
+                const key = String(tabId);
+                tab_listeners[key] = [];
+                tab_listener_keys[key] = new Set();
+                persistentState.debouncedSave();
+                bumpTabDataVersion(key);
+                return postToPanelPort(port, {
+                    type: PORT_MESSAGES.LISTENERS_CLEARED,
+                    timestamp: Date.now()
+                });
+            }
+        },
+        onDisconnected: () => {
+            removePanelPort(port);
+        },
+        onError: (error: unknown) => {
+            log.warn('Fransyfox: Panel port lifecycle failed:', error);
         }
-    });
-    port.onDisconnect.addListener(function () {
-        connectedPorts = connectedPorts.filter((p) => p !== port);
-        portTabIds.delete(port);
-    });
-    // Lightweight hello so the panel's status badge initializes instantly.
-    // The panel issues REQUEST_STATE with its tabId immediately, which returns
-    // the real per-tab listener data.
-    port.postMessage({
-        type: PORT_MESSAGES.STATE,
-        tabId: null,
-        listeners: [],
-        extensionActive: extensionActive,
-        cached: true,
-        timestamp: Date.now(),
-        dataVersion: 0
     });
 });
 // Initialize

@@ -91,6 +91,10 @@ export function parsePortRequestMessage(value: unknown): PortRequestMessage | nu
   if (!isRecord(value)) return null;
   if (typeof value.type !== 'string') return null;
   if (!PORT_TYPES.has(value.type as (typeof PORT_TYPES extends Set<infer U> ? U : never))) return null;
+  if ('tabId' in value && value.tabId !== undefined && value.tabId !== null
+    && (typeof value.tabId !== 'number' || !Number.isSafeInteger(value.tabId) || value.tabId < 0)) {
+    return null;
+  }
   return value as PortRequestMessage;
 }
 

@@ -234,10 +234,26 @@ HARNESS_PREAMBLE = """
           return fixtureTab.id;
         }
 
+        function waitForHello(port) {
+          return new Promise(function (resolve, reject) {
+            var timer = setTimeout(function () {
+              reject(new Error('timeout waiting for initial STATE'));
+            }, 15000);
+            function listener(msg) {
+              if (msg && msg.type === 'STATE' && msg.tabId === null) {
+                clearTimeout(timer);
+                port.onMessage.removeListener(listener);
+                resolve(msg);
+              }
+            }
+            port.onMessage.addListener(listener);
+          });
+        }
+
         async function withPort(fn) {
           var port = chrome.runtime.connect({ name: 'e2e-harness' });
           try {
-            return await fn(port);
+            return await fn(port, await waitForHello(port));
           } finally {
             try { port.disconnect(); } catch (e) {}
           }
@@ -261,7 +277,7 @@ def panel_harness(body):
 
 
 STATE_BODY = """
-        return await withPort(async function (port) {
+        return await withPort(async function (port, hello) {
           var tabId = await fixtureTabId();
           var state = await request(port, { type: 'REQUEST_STATE', tabId: tabId, expect: 'STATE' });
           var events = await request(port, { type: 'REQUEST_EVENTS', expect: 'EVENTS' });
@@ -277,6 +293,14 @@ STATE_BODY = """
           });
 
           return {
+            hello: {
+              type: hello.type,
+              tabId: hello.tabId,
+              listeners: Array.isArray(hello.listeners) ? hello.listeners.length : -1,
+              extensionActive: hello.extensionActive,
+              cached: hello.cached,
+              dataVersion: hello.dataVersion
+            },
             tabId: tabId,
             extensionActive: state.extensionActive,
             listenerCount: (state.listeners || []).length,
@@ -443,6 +467,17 @@ def main():
             check(
                 bool(result.get("extensionActive")),
                 "service worker reports extensionActive",
+            )
+            check(
+                result.get("hello") == {
+                    "type": "STATE",
+                    "tabId": None,
+                    "listeners": 0,
+                    "extensionActive": True,
+                    "cached": True,
+                    "dataVersion": 0,
+                },
+                "live panel port received the expected initial STATE",
             )
             check(
                 result.get("listenerCount", 0) >= 1,

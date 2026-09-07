@@ -1,5 +1,6 @@
 import { parsePortResponseMessage } from './contracts/messages';
 import { MAX_USER_REGEX_RULES, compileSafeRegex, limitRegexInput } from './shared/safe-regex';
+import { TabSnapshotCache } from './shared/tab-snapshot-cache';
 import type { ListenerRecord, MessageEventRecord, FrameNode } from './types/listener';
 import type { MatchReplaceRule } from './types/settings';
 // Main panel script for Fransyfox - Optimized with Pre-loading and Port Reconnection Fix
@@ -344,7 +345,7 @@ class PanelMain {
     findingsFilters: FindingsFilters;
     tabLabels: TabLabels;
     currentMatchRules: MatchReplaceRule[];
-    lastListenersByTab: Record<string, ListenerRecord[]>;
+    lastListenersByTab: TabSnapshotCache<ListenerRecord[]>;
     extensionActive: boolean;
     extensionToggleInProgress: boolean;
     preserveLogEnabled: boolean;
@@ -433,7 +434,7 @@ class PanelMain {
             timeline: 'Timeline'
         };
         this.currentMatchRules = [];
-        this.lastListenersByTab = {};
+        this.lastListenersByTab = new TabSnapshotCache<ListenerRecord[]>();
         this.extensionActive = true;
         this.extensionToggleInProgress = false;
         this.preserveLogEnabled = false;
@@ -1182,7 +1183,7 @@ class PanelMain {
         if (parsedMessage.type === FransyfoxMessages.PORT.LISTENERS_CLEARED) {
             this.currentListeners = [];
             if (this.currentTabId !== null) {
-                this.lastListenersByTab[this.currentTabId] = [];
+                this.lastListenersByTab.set(this.currentTabId, []);
             }
             this.updateTabCounts();
             if (this.viewMode === 'listeners') {
@@ -1220,11 +1221,15 @@ class PanelMain {
             return;
         }
         const stateListeners = Array.isArray(parsedMessage.listeners) ? parsedMessage.listeners : [];
-        // Cache per tab so switching tabs shows data instantly without a flash
-        this.lastListenersByTab[messageTabId] = stateListeners;
-        // Update current tab info if we don't have it
+        // Cache the active tab immediately and refresh known inactive tabs.
+        // Unknown inactive state can only be stale (for example, queued before
+        // tabs.onRemoved), so it must not recreate an evicted snapshot.
+        // Update current tab info if we don't have it.
         if (!this.currentTabId) {
             await this.updateCurrentTab();
+        }
+        if (!this.lastListenersByTab.setIfKnownOrCurrent(messageTabId, this.currentTabId, stateListeners)) {
+            return;
         }
         // Ignore updates for tabs other than the one this panel is showing
         if (this.currentTabId !== null && messageTabId !== this.currentTabId) {
@@ -1548,7 +1553,7 @@ class PanelMain {
                     this.currentTabId = activeInfo.tabId;
                     this.ui.currentTabId = activeInfo.tabId;
                     // Show last-known data for this tab immediately so listeners display without waiting
-                    this.currentListeners = this.lastListenersByTab[activeInfo.tabId] || [];
+                    this.currentListeners = this.lastListenersByTab.get(activeInfo.tabId) || [];
                     this.updateTabCounts();
                     this.refreshDisplay(false);
                     // Force accepting the next update by resetting version tracking
@@ -1566,6 +1571,7 @@ class PanelMain {
         // after a tab close.
         if (chrome.tabs && chrome.tabs.onRemoved) {
             chrome.tabs.onRemoved.addListener((removedTabId: number) => {
+                this.lastListenersByTab.remove(removedTabId);
                 void (async () => {
                     if (removedTabId === this.currentTabId) {
                         mainLog.info('Fransyfox: Current tab closed, switching to active tab');
@@ -1575,7 +1581,7 @@ class PanelMain {
                         await this.updateCurrentTab();
                         // Show last-known data for the new active tab
                         if (this.currentTabId !== null) {
-                            this.currentListeners = this.lastListenersByTab[this.currentTabId] || [];
+                            this.currentListeners = this.lastListenersByTab.get(this.currentTabId) || [];
                         }
                         this.updateTabCounts();
                         this.refreshDisplay(false);
@@ -2577,6 +2583,7 @@ class PanelMain {
         // Clear other references
         this.currentListeners = [];
         this.currentMessages = [];
+        this.lastListenersByTab.clear();
     }
 }
 (globalThis as typeof globalThis & { PanelMain: typeof PanelMain }).PanelMain = PanelMain;

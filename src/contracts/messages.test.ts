@@ -39,6 +39,18 @@ describe('contracts/messages', () => {
     expect(msg).toEqual({ type: 'REQUEST_STATE' });
   });
 
+  test('accepts non-negative integer and null port request tab IDs', () => {
+    expect(parsePortRequestMessage({ type: 'CLEAR_EVENTS', tabId: 7 })).toEqual({ type: 'CLEAR_EVENTS', tabId: 7 });
+    expect(parsePortRequestMessage({ type: 'CLEAR_LISTENERS', tabId: null })).toEqual({ type: 'CLEAR_LISTENERS', tabId: null });
+  });
+
+  test('rejects malformed port request tab IDs before destructive handlers', () => {
+    for (const tabId of ['7', -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, {}, []]) {
+      expect(parsePortRequestMessage({ type: 'CLEAR_EVENTS', tabId })).toBeNull();
+    }
+    expect(parsePortRequestMessage({ type: 'REQUEST_EVENTS', tabId: '7' })).toBeNull();
+  });
+
   test('normalizes legacy state response shape', () => {
     const msg = parsePortResponseMessage({ listeners: {}, currentUrl: 'https://example.com' });
     expect(msg?.type).toBe('STATE');
