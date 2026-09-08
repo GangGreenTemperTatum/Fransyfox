@@ -830,12 +830,12 @@ function ensureFrameNode(tabId: number, frameId: number | null | undefined, url?
 }
 async function refreshFrameStructure(tabId: number): Promise<void> {
     if (typeof tabId !== 'number') return;
-    let frames: chrome.webNavigation.GetAllFrameResultDetails[] | null = null;
+    let frames: chrome.webNavigation.GetAllFrameResultDetails[] | null;
     try {
         frames = await chrome.webNavigation.getAllFrames({ tabId });
     }
     catch (error) {
-        frames = null;
+        return;
     }
     if (!frames) return;
     const key = String(tabId);

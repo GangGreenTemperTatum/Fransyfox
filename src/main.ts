@@ -230,9 +230,8 @@ import type { MatchReplaceRule, MessageDebugSettings } from './types/settings';
     // Get frame hops info
     const h = function (p?: unknown) {
         let hops = "";
-        let currentWindow: Window | null = null;
         try {
-            currentWindow = (p && typeof p === 'object' && 'top' in p)
+            const currentWindow = (p && typeof p === 'object' && 'top' in p)
                 ? (p as Window)
                 : window;
             if (currentWindow.top != currentWindow && currentWindow.top == window.top) {
