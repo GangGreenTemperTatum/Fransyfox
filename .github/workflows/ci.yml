@@ -87,9 +87,7 @@ jobs:
       - name: Install Python dependencies
         run: "python3 -m pip install --require-hashes --only-binary=:all: -r scripts/e2e/requirements.txt"
       - name: Run Firefox e2e
-        env:
-          FIREFOX_BIN: "$HOME/firefox/firefox"
-        run: python3 scripts/e2e/firefox_e2e.py
+        run: FIREFOX_BIN="$HOME/firefox/firefox" python3 scripts/e2e/firefox_e2e.py
 
   e2e-chrome:
     name: End-to-end (Chrome)
@@ -112,7 +110,10 @@ jobs:
         with:
           name: dist
           path: dist
+      - name: Locate Chrome
+        run: |
+          CHROME_BIN="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME_BIN"
+          echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
       - name: Run Chrome e2e
-        env:
-          CHROME_BIN: google-chrome
         run: npm run e2e:chrome
